@@ -18,7 +18,7 @@ db = firebase.database()
 # For test adding a user to the database
 firstName = "Karl"
 surname = "Francisco"
-name = surname + "." + firstName
+name = surname + "_" + firstName
 data = {"Name": firstName, "Surname": surname, "Date of Birth": "26/04/1995", "Age": 28}
 db.child("Users").child(name).set(data)
 
