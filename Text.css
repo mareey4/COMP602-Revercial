@@ -1,0 +1,30 @@
+.text-container {
+    display: flex;
+    flex-direction: column; /* Stack the elements vertically */
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  
+  .wrapper {
+    width: 1500px;
+    height: 40px;
+    text-align: center; /* Center the content horizontally */
+  }
+  
+  .wrapper h1 {
+    font-size: 36px;
+  }
+  
+  .wrapper-2 {
+    width: 80px;
+    height: 600px;
+    text-align: left; /* Center the content horizontally */
+    margin-top: 20px; /* Add spacing between the elements */
+  }
+  
+  .wrapper-2 h2 {
+    font-size: 15px;
+    text-align: left;
+  }
+  
