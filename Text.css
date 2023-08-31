@@ -14,17 +14,43 @@
   
   .wrapper h1 {
     font-size: 36px;
+    color: white;
   }
   
   .wrapper-2 {
-    width: 80px;
+    width: 270px;
     height: 600px;
     text-align: left; /* Center the content horizontally */
-    margin-top: 20px; /* Add spacing between the elements */
+    margin-top: 60px; /* Add spacing between the elements */
   }
   
   .wrapper-2 h2 {
     font-size: 15px;
+    color: white;
     text-align: left;
   }
   
+  .password-requirements {
+    font-size: 8px;
+    color: white; /* Change the font color to white */
+    margin-top: 1px;
+  }
+
+  .create-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .create-button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px; /* Add some spacing between password section and button */
+  }
+
+  label {
+    color: white;
+  }

@@ -1,5 +1,6 @@
-import firebase from "firebase/app";
-import "firebase/database";
+import { initializeApp }  from "firebase/app";
+import {getDatabase} from "firebase/database";
+import user from "./user";
 
 const config = {
   apiKey: "AIzaSyBd7z644_giN5TX9lv5T1AdHfp1ilwsrbA",
@@ -12,7 +13,19 @@ const config = {
   measurementId: "G-4VYLQMSHKR",
 };
 
-const firebaseApp = firebase.initializeApp(config);
-const db = firebaseApp.database();
+const fbConfig = initializeApp(config);
+const db = getDatabase(fbConfig);
 
-export default db;
+export const saveUserData = async (email, first_name, surname) => {
+  const sanitizedEmail = email.replace('.', ',');
+  const databasePath = `Users/${sanitizedEmail}`;
+  const dbRef = ref(db, databasePath);
+
+  try{
+    await set(dbRef, {first_name: first_name, surname: surname});
+    console.log("User created successfully!");
+  }catch(error){
+    console.error("Error creating a user!", error);
+    throw error;
+  }
+};

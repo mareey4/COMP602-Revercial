@@ -1,22 +1,35 @@
 import React from "react";
-/* import db from "./firebase.js";
- */ import "./Text.css";
+import "./Text.css";
+import { saveUserData } from "./firebase";
+import "./user";
 
 const Text = () => {
-  /*   const createUser = () => {
-    const firstName = "Karl";
-    const surname = "Francisco";
-    const name = `${surname}_${firstName}`;
-    const data = {
-      Name: firstName,
-      Surname: surname,
-      "Date of Birth": "26/04/1995",
-      Age: 28,
-    };
+  const handleCreateClick = () => {
+    const firstName = document.querySelector('input[name="fname"]');
+    const lastName = document.querySelector('input[name="lname"]');
+    const dob = document.querySelector('input[name="dob"]');
+    const email = document.querySelector('input[name="email"]');
+    const username = document.querySelector('input[name="username"]');
+    const password = document.querySelector('input[name="password"]');
 
-    // Push data to Firebase
-    db.ref("Users").child(name).set(data);
-  }; */
+    if (!firstName || !lastName || !dob || !email || !username || !password) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    const fullName = `${lastName} ${firstName}`;
+
+    const newUser = new User(
+      firstName,
+      lastName,
+      username,
+      dob,
+      email,
+      password
+    );
+
+    saveUserData(email, firstName, lastName);
+  };
 
   return (
     <div className="text-container">
@@ -28,23 +41,31 @@ const Text = () => {
           First Name: <input name="fname" /> Last Name: <input name="lname" />
         </label>
         <div>
-          DOB: <input type="date" name="dob" /> {/* Use type="date" */}
+          <label>
+            DOB: <input type="date" name="dob" />
+          </label>
         </div>
         <div>
-          Email: <input name="email" />
+          <label>
+            Email: <input name="email" />
+          </label>
         </div>
         <div>
-          Username: <input name="username" />
+          <label>
+            Username: <input name="username" />
+          </label>
         </div>
         <div>
-          Password: <input type="password" name="password" />
+          <label>
+            Password: <input type="password" name="password" />
+          </label>
           <p className="password-requirements">
             Password must have an uppercase letter, a lowercase letter, a
             number, and be at least 8 characters long.
           </p>
         </div>
         <div className="create-button-container">
-          <button className="create-button" /* onClick={createUser} */>
+          <button className="create-button" onClick={handleCreateClick}>
             Create
           </button>
         </div>
