@@ -1,5 +1,6 @@
 import { initializeApp }  from "firebase/app";
 import {getDatabase} from "firebase/database";
+import { ref } from "firebase/database";
 import user from "./user";
 
 const config = {
@@ -17,14 +18,21 @@ const fbConfig = initializeApp(config);
 const db = getDatabase(fbConfig);
 
 export const saveUserData = async (email, first_name, surname) => {
-  const sanitizedEmail = email.replace('.', ',');
+  console.log("Recevied email:", email);
+  
+  if (typeof email !== 'string' || email === '') {
+    console.error('Invalid email format');
+    return;
+  }
+  
+  const sanitizedEmail = email.replace(".",",");
   const databasePath = `Users/${sanitizedEmail}`;
   const dbRef = ref(db, databasePath);
 
-  try{
+  try {
     await set(dbRef, {first_name: first_name, surname: surname});
     console.log("User created successfully!");
-  }catch(error){
+  } catch(error){
     console.error("Error creating a user!", error);
     throw error;
   }

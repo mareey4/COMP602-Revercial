@@ -1,10 +1,12 @@
 import React from "react";
 import "./Text.css";
 import { saveUserData } from "./firebase";
-import "./user";
+import User from "./user";
 
 const Text = () => {
   const handleCreateClick = () => {
+    console.log("Create button clicked");
+
     const firstName = document.querySelector('input[name="fname"]');
     const lastName = document.querySelector('input[name="lname"]');
     const dob = document.querySelector('input[name="dob"]');
@@ -28,7 +30,10 @@ const Text = () => {
       password
     );
 
-    saveUserData(email, firstName, lastName);
+    console.log(newUser);
+
+    console.log("Email value:", email);
+    saveUserData(email.toString(), firstName, lastName);
   };
 
   return (
