@@ -1,25 +1,30 @@
-import React from "react";
 import "./Text.css";
 import { saveUserData } from "./firebase";
 import User from "./user";
 
-const Text = () => {
+function Text() {
   const handleCreateClick = () => {
     console.log("Create button clicked");
 
-    const firstName = document.querySelector('input[name="fname"]');
-    const lastName = document.querySelector('input[name="lname"]');
-    const dob = document.querySelector('input[name="dob"]');
-    const email = document.querySelector('input[name="email"]');
-    const username = document.querySelector('input[name="username"]');
-    const password = document.querySelector('input[name="password"]');
+    const firstNameInput = document.querySelector('input[name="fname"]') as HTMLInputElement;
+    const lastNameInput = document.querySelector('input[name="lname"]') as HTMLInputElement;
+    const dobInput = document.querySelector('input[name="dob"]') as HTMLInputElement;
+    const emailInput = document.querySelector('input[name="email"]') as HTMLInputElement;
+    const usernameInput = document.querySelector('input[name="username"]') as HTMLInputElement;
+    const passwordInput = document.querySelector('input[name="password"]') as HTMLInputElement;
 
-    if (!firstName || !lastName || !dob || !email || !username || !password) {
+    if (!firstNameInput || !lastNameInput || !dobInput || !emailInput || !usernameInput || !passwordInput) {
       alert("Please fill in all fields.");
       return;
     }
 
-    const fullName = `${lastName} ${firstName}`;
+    const fullName = `${lastNameInput} ${firstNameInput}`; // Not sure if this is needed anywhere - Karl
+    const firstName = firstNameInput.value;
+    const lastName = lastNameInput.value;
+    const username = usernameInput.value;
+    const dob = dobInput.value;
+    const email = emailInput.value;
+    const password = passwordInput.value;
 
     const newUser = new User(
       firstName,
@@ -32,8 +37,7 @@ const Text = () => {
 
     console.log(newUser);
 
-    console.log("Email value:", email);
-    saveUserData(email.toString(), firstName, lastName);
+    saveUserData(newUser);
   };
 
   return (
@@ -77,6 +81,6 @@ const Text = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Text;
