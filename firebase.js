@@ -1,7 +1,5 @@
 import { initializeApp }  from "firebase/app";
-import {getDatabase} from "firebase/database";
-import { ref } from "firebase/database";
-import user from "./user";
+import {getDatabase, ref, set } from "firebase/database";
 
 const config = {
   apiKey: "AIzaSyBd7z644_giN5TX9lv5T1AdHfp1ilwsrbA",
@@ -15,25 +13,17 @@ const config = {
 };
 
 const fbConfig = initializeApp(config);
-const db = getDatabase(fbConfig);
-
-export const saveUserData = async (email, first_name, surname) => {
-  console.log("Recevied email:", email);
   
-  if (typeof email !== 'string' || email === '') {
-    console.error('Invalid email format');
-    return;
-  }
-  
-  const sanitizedEmail = email.replace(".",",");
-  const databasePath = `Users/${sanitizedEmail}`;
-  const dbRef = ref(db, databasePath);
+  export function saveUserData(newUser) {
+    const db =  getDatabase();
+    const sanitizedEmail = newUser.email.replace(".",",");
+    const reference = ref(db, 'Users/' + sanitizedEmail);
 
-  try {
-    await set(dbRef, {first_name: first_name, surname: surname});
-    console.log("User created successfully!");
-  } catch(error){
-    console.error("Error creating a user!", error);
-    throw error;
+    set(reference, {
+        Name: newUser.first_name,
+        Surname: newUser.surname,
+        DOB: newUser.date_of_birth,
+        Username: newUser.username,
+        Password: newUser.password
+    });
   }
-};
