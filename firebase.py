@@ -2,6 +2,7 @@
 import pyrebase
 
 config = {
+    "databaseURL": "https://revercial-43fe3-default-rtdb.firebaseio.com/",
     "apiKey": "AIzaSyBd7z644_giN5TX9lv5T1AdHfp1ilwsrbA",
     "authDomain": "revercial-43fe3.firebaseapp.com",
     "projectId": "revercial-43fe3",
