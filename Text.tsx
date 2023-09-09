@@ -1,5 +1,5 @@
 import "./Text.css";
-import { saveUserData } from "./firebase";
+import { checkExistingEmail, saveUserData, getAllUsers } from "./firebase";
 import User from "./user";
 
 function Text() {
@@ -13,31 +13,35 @@ function Text() {
     const usernameInput = document.querySelector('input[name="username"]') as HTMLInputElement;
     const passwordInput = document.querySelector('input[name="password"]') as HTMLInputElement;
 
-    if (!firstNameInput || !lastNameInput || !dobInput || !emailInput || !usernameInput || !passwordInput) {
+    if (!firstNameInput.value || !lastNameInput.value || !dobInput.value || 
+      !emailInput.value || !usernameInput.value || !passwordInput.value) {
       alert("Please fill in all fields.");
       return;
     }
 
-    const fullName = `${lastNameInput} ${firstNameInput}`; // Not sure if this is needed anywhere - Karl
-    const firstName = firstNameInput.value;
-    const lastName = lastNameInput.value;
-    const username = usernameInput.value;
-    const dob = dobInput.value;
-    const email = emailInput.value;
-    const password = passwordInput.value;
+    if (!checkExistingEmail(emailInput.value)) {
+      const fullName = `${lastNameInput} ${firstNameInput}`; // Not sure if this is needed anywhere - Karl
+      const firstName = firstNameInput.value;
+      const lastName = lastNameInput.value;
+      const username = usernameInput.value;
+      const dob = dobInput.value;
+      const email = emailInput.value;
+      const password = passwordInput.value;
 
-    const newUser = new User(
-      firstName,
-      lastName,
-      username,
-      dob,
-      email,
-      password
-    );
+      const newUser = new User(
+        firstName,
+        lastName,
+        username,
+        dob,
+        email,
+        password
+      );
 
-    console.log(newUser);
+      saveUserData(newUser);
 
-    saveUserData(newUser);
+    } else {
+      alert("Existing account with the given email already exists.")
+    }
   };
 
   return (
