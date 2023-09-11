@@ -1,5 +1,4 @@
 import { initializeApp }  from "firebase/app";
-import {getDatabase, ref, set } from "firebase/database";
 
 const config = {
   apiKey: "AIzaSyBd7z644_giN5TX9lv5T1AdHfp1ilwsrbA",
@@ -12,18 +11,4 @@ const config = {
   measurementId: "G-4VYLQMSHKR",
 };
 
-const fbConfig = initializeApp(config);
-  
-  export function saveUserData(newUser) {
-    const db =  getDatabase();
-    const sanitizedEmail = newUser.email.replace(".",",");
-    const reference = ref(db, 'Users/' + sanitizedEmail);
-
-    set(reference, {
-        Name: newUser.first_name,
-        Surname: newUser.surname,
-        DOB: newUser.date_of_birth,
-        Username: newUser.username,
-        Password: newUser.password
-    });
-  }
+export const fbConfig = initializeApp(config);
