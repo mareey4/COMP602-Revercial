@@ -1,5 +1,5 @@
 import "./Text.css";
-import { saveUserData, checkExistingEmail, getAllUsers } from "./firebase";
+import { getUserViaEmail, saveUserData, validateDOB, login } from "./validation";
 import User from "./user";
 /* import { useHistory } from "react-router-dom";
  */
@@ -39,29 +39,46 @@ function Text() {
       return;
     }
 
-    if (!checkExistingEmail(emailInput.value)) {
-      const fullName = `${lastNameInput} ${firstNameInput}`; // Not sure if this is needed anywhere - Karl
-      const firstName = firstNameInput.value;
-      const lastName = lastNameInput.value;
-      const username = usernameInput.value;
-      const dob = dobInput.value;
-      const email = emailInput.value;
-      const password = passwordInput.value;
+    // For Benny for login function example
+    // let valid = login(email.value, password.value);
 
-      const newUser = new User(
-        firstName,
-        lastName,
-        username,
-        dob,
-        email,
-        password
+    // if(valid) {
+    //   alert("Successfully logged in.");
+    // } else {
+    //   alert("Invalid email/username or password, please try again.");
+    // }
+
+    if (!firstName.value || !lastName.value || !dob.value || 
+      !email.value || !username.value || !password.value) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z.-]{2,}$/;
+
+    if(emailRegex.test(email.value)) {
+      let user = getUserViaEmail(email.value);
+
+      if(user === undefined) {
+        const newUser = new User(
+          firstName.value,
+          lastName.value,
+          username.value,
+          dob.value,
+          email.value,
+          password.value
       );
 
       saveUserData(newUser);
-      /*       history.push("srcComponentsProfile.tsx");
+      /*   history.push("srcComponentsProfile.tsx");
        */
+      } else {
+        alert("Existing account with the given email already exists.");
+        return;
+      }
     } else {
-      alert("Existing account with the given email already exists.");
+      alert("Invalid email address, please try again.");
+      return;
     }
   };
 
