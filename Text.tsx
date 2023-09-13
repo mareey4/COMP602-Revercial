@@ -1,135 +1,179 @@
 import "./Text.css";
-import { getUserViaEmail, saveUserData, validateDOB, login } from "./validation";
+import {
+  getUserViaEmail,
+  saveUserData,
+  validateName,
+  validateDOB,
+} from "./validation";
+import React, { useState } from "react";
 import User from "./user";
-/* import { useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
+/* import { useHistory } from "react-router-dom"; // Import useHistory
  */
 function Text() {
-  /*   const history = useHistory();
-   */ const handleCreateClick = () => {
-    console.log("Create button clicked");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  /* const history = useHistory(); // Create history object
 
-    const firstName = document.querySelector(
-      'input[name="fname"]'
-    ) as HTMLInputElement;
-    const lastName = document.querySelector(
-      'input[name="lname"]'
-    ) as HTMLInputElement;
-    const dob = document.querySelector(
-      'input[name="dob"]'
-    ) as HTMLInputElement;
-    const email = document.querySelector(
-      'input[name="email"]'
-    ) as HTMLInputElement;
-    const username = document.querySelector(
-      'input[name="username"]'
-    ) as HTMLInputElement;
-    const password = document.querySelector(
-      'input[name="password"]'
-    ) as HTMLInputElement;
+  const handleFirstNameChange = (e) => {
+    const firstNameValue = e.target.value;
+    setFirstName(firstNameValue);
+    setIsButtonDisabled(!validateForm(firstNameValue, lastName));
+  };
 
-    if (
-      !firstName.value ||
-      !lastName.value ||
-      !dob.value ||
-      !email.value ||
-      !username.value ||
-      !password.value
-    ) {
-      alert("Please fill in all fields.");
-      return;
-    }
+  const handleLastNameChange = (e) => {
+    const lastNameValue = e.target.value;
+    setLastName(lastNameValue);
+    setIsButtonDisabled(!validateForm(firstName, lastNameValue));
+  }; */
 
-    // For Benny for login function example
-    // let valid = login(email.value, password.value);
+  /*   const validateForm = (firstNameValue, lastNameValue) => {
+    return (
+      firstNameValue.trim() !== "" &&
+      lastNameValue.trim() !== "" &&
+      validateName(firstNameValue) &&
+      validateName(lastNameValue)
+    );
+  }; */
 
-    // if(valid) {
-    //   alert("Successfully logged in.");
-    // } else {
-    //   alert("Invalid email/username or password, please try again.");
-    // }
+  const handleCreateClick = async () => {
+    if (!isButtonDisabled) {
+      console.log("Create button clicked");
 
-    if (!firstName.value || !lastName.value || !dob.value || 
-      !email.value || !username.value || !password.value) {
-      alert("Please fill in all fields.");
-      return;
-    }
+      const firstNameInput = document.querySelector(
+        'input[name="fname"]'
+      ) as HTMLInputElement;
+      const lastNameInput = document.querySelector(
+        'input[name="lname"]'
+      ) as HTMLInputElement;
+      const dobInput = document.querySelector(
+        'input[name="dob"]'
+      ) as HTMLInputElement;
+      const emailInput = document.querySelector(
+        'input[name="email"]'
+      ) as HTMLInputElement;
+      const usernameInput = document.querySelector(
+        'input[name="username"]'
+      ) as HTMLInputElement;
+      const passwordInput = document.querySelector(
+        'input[name="password"]'
+      ) as HTMLInputElement;
 
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z.-]{2,}$/;
-
-    if(emailRegex.test(email.value)) {
-      let user = getUserViaEmail(email.value);
-
-      if(user === undefined) {
-        const newUser = new User(
-          firstName.value,
-          lastName.value,
-          username.value,
-          dob.value,
-          email.value,
-          password.value
-      );
-
-      saveUserData(newUser);
-      /*   history.push("srcComponentsProfile.tsx");
-       */
-      } else {
-        alert("Existing account with the given email already exists.");
+      if (
+        !firstNameInput.value ||
+        !lastNameInput.value ||
+        !dobInput.value ||
+        !emailInput.value ||
+        !usernameInput.value ||
+        !passwordInput.value
+      ) {
+        alert("Please fill in all fields.");
         return;
       }
-    } else {
-      alert("Invalid email address, please try again.");
-      return;
+
+      const isFirstNameValid = await validateName(firstNameInput.value);
+      const isLastNameValid = await validateName(lastNameInput.value);
+
+      if (!isFirstNameValid || !isLastNameValid) {
+        alert("Invalid name");
+        return;
+      }
+
+      const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z.-]{2,}$/;
+
+      if (emailRegex.test(emailInput.value)) {
+        let user = getUserViaEmail(emailInput.value);
+
+        if (user === undefined) {
+          const newUser = new User(
+            firstNameInput.value,
+            lastNameInput.value,
+            usernameInput.value,
+            dobInput.value,
+            emailInput.value,
+            passwordInput.value
+          );
+
+          saveUserData(newUser);
+          /*  history.push("/profile"); // Redirect to the profile page */
+        } else {
+          alert("Existing account with the given email already exists.");
+        }
+      } else {
+        alert("Invalid email address, please try again.");
+      }
     }
   };
 
   return (
-    <body>
-      <div>
-        <div className="wrapper">
-          <h1>Create Account</h1>
-        </div>
-        <div className="wrapper-2">
+    <div>
+      <div className="wrapper">
+        <h1>Create Account</h1>
+      </div>
+      <div className="wrapper-2">
+        <label>
+          First Name:{" "}
+          <input
+            type="text"
+            name="fname"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />{" "}
+          Last Name:{" "}
+          <input
+            type="text"
+            name="lname"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+        </label>
+        <div>
           <label>
-            First Name: <input name="fname" /> Last Name: <input name="lname" />
+            DOB: <input type="date" name="dob" />
           </label>
-          <div>
-            <label>
-              DOB: <input type="date" name="dob" />
-            </label>
-          </div>
-          <div>
-            <label>
-              Email: <input name="email" />
-            </label>
-          </div>
-          <div>
-            <label>
-              Username: <input name="username" />
-            </label>
-          </div>
-          <div>
-            <label>
-              Password: <input type="password" name="password" />
-            </label>
-            <p className="password-requirements">
-              Password must have an uppercase letter, a lowercase letter, a
-              number, and be at least 8 characters long.
-            </p>
-          </div>
-          <div className="login-link">
-            <p>
-              Already have an account?{" "}
-              <a href="src\Components\login.html">Login here</a>
-            </p>
-          </div>
         </div>
-        <div className="create-button-container">
-          <button className="create-button" onClick={handleCreateClick}>
-            Create
-          </button>
+        <div>
+          <label>
+            Email: <input type="text" name="email" />
+          </label>
+        </div>
+        <div>
+          <label>
+            Username: <input type="text" name="username" />
+          </label>
+        </div>
+        <div>
+          <label>
+            Password: <input type="password" name="password" />
+          </label>
+          <p className="password-requirements">
+            Password must have an uppercase letter, a lowercase letter, a
+            number, and be at least 8 characters long.
+          </p>
+        </div>
+        <div className="login-link">
+          <p>
+            Already have an account?{" "}
+            <Link to="/login">Login here</Link>
+          </p>
         </div>
       </div>
-    </body>
+      <div className="create-button-container">
+        <a href="src\Components\Profile.tsx">
+          <button
+            className="create-button"
+            onClick={handleCreateClick}
+            disabled={isButtonDisabled} // Add this line
+          >
+            Create
+          </button>
+        </a>
+      </div>
+      {}
+      {/*         {nameError && <p>{nameError}</p>}
+       */}{" "}
+    </div>
   );
 }
 
