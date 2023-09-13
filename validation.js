@@ -228,7 +228,7 @@ export async function validateAge(givenDOB, currentDate) {
         if((currentDate.getFullYear() - givenDOB.getFullYear()) >= 13) {
             if((currentDate.getFullYear() - givenDOB.getFullYear()) === 13) {
                 if(currentDate.getMonth() === givenDOB.getMonth()) {
-                    if(currentDate.getDate() === givenDOB.getDate()) {
+                    if(currentDate.getDate() <= givenDOB.getDate()) {
                         validAge = true;
                     }
                 }
