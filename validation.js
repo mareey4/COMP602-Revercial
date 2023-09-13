@@ -2,7 +2,7 @@ import { getDatabase, ref, set, onValue, remove } from 'firebase/database'
 import { fbConfig } from './firebase';
 import User from './user'
 
-export function saveUserData(newUser) {
+export async function saveUserData(newUser) {
     const db = getDatabase(fbConfig);
     const sanitizedEmail = newUser.email.replaceAll(".",",");
     const referenceEmail = ref(db, 'Users/' + sanitizedEmail);
@@ -16,66 +16,73 @@ export function saveUserData(newUser) {
     });
 }
 
-export function getUserViaEmail(userEmail) {
+export async function getUserViaEmail(userEmail) {
     const db = getDatabase(fbConfig);
     const refEmail = ref(db, 'Users');
     const sanitizedEmail = userEmail.replaceAll(".",",");
-    let user;
+    
+    return new Promise((resolve, reject) => {
+        onValue(refEmail, (snapshot) => {
+            const dataEmail = snapshot.val();
 
-    onValue(refEmail, (snapshot) => {
-        const dataEmail = snapshot.val();
+            for(const email in dataEmail){
+                if(email === sanitizedEmail){
+                    const userData = dataEmail[email];
 
-        for(const email in dataEmail){
-            if(email === sanitizedEmail){
-                const userData = dataEmail[email];
+                    const user = new User(
+                        userData.Name,
+                        userData.Surname,
+                        userData.Username,
+                        userData.DOB,
+                        email,
+                        userData.Password
+                    );
 
-                user = new User(
-                    userData.Name,
-                    userData.Surname,
-                    userData.Username,
-                    userData.DOB,
-                    email,
-                    userData.Password
-                );
-
-                break;
+                    resolve(user);
+                    return;
+                }
             }
-        }
-    });
 
-    return user;
+            resolve(undefined);
+            return;
+        });
+    });
 }
 
-export function getUserViaUsername(username) {
+export async function getUserViaUsername(username) {
     const db = getDatabase(fbConfig);
     const reference = ref(db, 'Users');
-    let user;
 
-    onValue(reference, (snapshot) => {
-        const dataUsername = snapshot.val();
+    return new Promise((resolve, reject) => {
+        onValue(reference, (snapshot) => {
+            const dataUsername = snapshot.val();
 
-        for(const email in dataUsername) {
-            const userData = dataUsername[email];
+            for(const email in dataUsername) {
+                const userData = dataUsername[email];
 
-            if(userData.Username === username) {
-                user = new User(
-                    userData.Name,
-                    userData.Surname,
-                    userData.Username,
-                    userData.DOB,
-                    email,
-                    userData.Password
-                );
+                if(userData.Username === username) {
+                    const user = new User(
+                        userData.Name,
+                        userData.Surname,
+                        userData.Username,
+                        userData.DOB,
+                        email,
+                        userData.Password
+                    );
 
-                break;
+                    resolve(user);
+                    return;
+                }
             }
-        }
-    });
 
-    return user;
+            resolve(undefined);
+            return;
+        });
+    });
 }
 
-export function deleteAccount(user) {
+
+export async function deleteAccount(user) {
     const db = getDatabase(fbConfig);
     const refUsers = ref(db, 'Users');
 
@@ -90,22 +97,20 @@ export function deleteAccount(user) {
     });
 }
 
-export function login(id, password) {
-    let user;
+export async function login(id, password) {
     let validLogin = false;
-
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z.-]{2,}$/;
 
     if(emailRegex.test(id)) {
-        user = getUserViaEmail(id);
+        const user = await getUserViaEmail(id);
+
+        if(user !== undefined && user.password === password) {
+            validLogin = true;
+        }
     } else {
-        user = getUserViaUsername(id);
-    }
+        const user = await getUserViaUsername(id);
 
-    // console.log(user);
-
-    if(user !== undefined) {
-        if(user.password === password) {
+        if(user !== undefined && user.password === password) {
             validLogin = true;
         }
     }
@@ -113,7 +118,7 @@ export function login(id, password) {
     return validLogin;
 }
 
-export function getAllUsers() {
+export async function getAllUsers() {
     const db = getDatabase(fbConfig);
     const refUsers = ref(db, 'Users');
     const users = [];
@@ -140,7 +145,7 @@ export function getAllUsers() {
     return users;
 }
 
-export function validateName(name) {
+export async function validateName(name) {
     const exp = /^[a-zA-Z-]$/;
 
     if(exp.test(name)) {
@@ -150,7 +155,7 @@ export function validateName(name) {
     }
 }
 
-export function validateDOB(dob) {
+export async function validateDOB(dob) {
     const dateArray = dob.split("-");
     const givenDOB = new Date(dateArray[0], (dateArray[1] - 1), dateArray[2]);
     const currentDate = new Date();
@@ -186,7 +191,7 @@ export function validateDOB(dob) {
     return valid;
 }
 
-export function validateAge(givenDOB, currentDate) {
+export async function validateAge(givenDOB, currentDate) {
     if((currentDate.getFullYear - givenDOB.getFullYear) > 13) {
         return true;
     } else if ((currentDate.getFullYear - givenDOB.getFullYear) === 13) {

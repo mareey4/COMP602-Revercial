@@ -8,32 +8,32 @@ function Text() {
    */ const handleCreateClick = () => {
     console.log("Create button clicked");
 
-    const firstNameInput = document.querySelector(
+    const firstName = document.querySelector(
       'input[name="fname"]'
     ) as HTMLInputElement;
-    const lastNameInput = document.querySelector(
+    const lastName = document.querySelector(
       'input[name="lname"]'
     ) as HTMLInputElement;
-    const dobInput = document.querySelector(
+    const dob = document.querySelector(
       'input[name="dob"]'
     ) as HTMLInputElement;
-    const emailInput = document.querySelector(
+    const email = document.querySelector(
       'input[name="email"]'
     ) as HTMLInputElement;
-    const usernameInput = document.querySelector(
+    const username = document.querySelector(
       'input[name="username"]'
     ) as HTMLInputElement;
-    const passwordInput = document.querySelector(
+    const password = document.querySelector(
       'input[name="password"]'
     ) as HTMLInputElement;
 
     if (
-      !firstNameInput ||
-      !lastNameInput ||
-      !dobInput ||
-      !emailInput ||
-      !usernameInput ||
-      !passwordInput
+      !firstName.value ||
+      !lastName.value ||
+      !dob.value ||
+      !email.value ||
+      !username.value ||
+      !password.value
     ) {
       alert("Please fill in all fields.");
       return;
