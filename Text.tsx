@@ -4,106 +4,118 @@ import {
   saveUserData,
   validateName,
   validateDOB,
+  login,
+  validateUsername,
+  validatePassword,
 } from "./validation";
 import React, { useState } from "react";
 import User from "./user";
-import { Link } from "react-router-dom";
-/* import { useHistory } from "react-router-dom"; // Import useHistory
- */
+import { useNavigate } from "react-router-dom";
+
 function Text() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
-  /* const history = useHistory(); // Create history object
+  const [dob, setDOB] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [dobError, setDOBError] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
-  const handleFirstNameChange = (e) => {
-    const firstNameValue = e.target.value;
-    setFirstName(firstNameValue);
-    setIsButtonDisabled(!validateForm(firstNameValue, lastName));
-  };
-
-  const handleLastNameChange = (e) => {
-    const lastNameValue = e.target.value;
-    setLastName(lastNameValue);
-    setIsButtonDisabled(!validateForm(firstName, lastNameValue));
-  }; */
-
-  /*   const validateForm = (firstNameValue, lastNameValue) => {
-    return (
-      firstNameValue.trim() !== "" &&
-      lastNameValue.trim() !== "" &&
-      validateName(firstNameValue) &&
-      validateName(lastNameValue)
-    );
-  }; */
+  const navigate = useNavigate();
 
   const handleCreateClick = async () => {
-    if (!isButtonDisabled) {
-      console.log("Create button clicked");
+    console.log("Create button clicked");
 
-      const firstNameInput = document.querySelector(
-        'input[name="fname"]'
-      ) as HTMLInputElement;
-      const lastNameInput = document.querySelector(
-        'input[name="lname"]'
-      ) as HTMLInputElement;
-      const dobInput = document.querySelector(
-        'input[name="dob"]'
-      ) as HTMLInputElement;
-      const emailInput = document.querySelector(
-        'input[name="email"]'
-      ) as HTMLInputElement;
-      const usernameInput = document.querySelector(
-        'input[name="username"]'
-      ) as HTMLInputElement;
-      const passwordInput = document.querySelector(
-        'input[name="password"]'
-      ) as HTMLInputElement;
+    const firstName = document.querySelector(
+      'input[name="fname"]'
+    ) as HTMLInputElement;
+    const lastName = document.querySelector(
+      'input[name="lname"]'
+    ) as HTMLInputElement;
+    const dob = document.querySelector('input[name="dob"]') as HTMLInputElement;
+    const email = document.querySelector(
+      'input[name="email"]'
+    ) as HTMLInputElement;
+    const username = document.querySelector(
+      'input[name="username"]'
+    ) as HTMLInputElement;
+    const password = document.querySelector(
+      'input[name="password"]'
+    ) as HTMLInputElement;
 
-      if (
-        !firstNameInput.value ||
-        !lastNameInput.value ||
-        !dobInput.value ||
-        !emailInput.value ||
-        !usernameInput.value ||
-        !passwordInput.value
-      ) {
-        alert("Please fill in all fields.");
-        return;
-      }
-
-      const isFirstNameValid = await validateName(firstNameInput.value);
-      const isLastNameValid = await validateName(lastNameInput.value);
-
-      if (!isFirstNameValid || !isLastNameValid) {
-        alert("Invalid name");
-        return;
-      }
-
-      const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z.-]{2,}$/;
-
-      if (emailRegex.test(emailInput.value)) {
-        let user = getUserViaEmail(emailInput.value);
-
-        if (user === undefined) {
-          const newUser = new User(
-            firstNameInput.value,
-            lastNameInput.value,
-            usernameInput.value,
-            dobInput.value,
-            emailInput.value,
-            passwordInput.value
-          );
-
-          saveUserData(newUser);
-          /*  history.push("/profile"); // Redirect to the profile page */
-        } else {
-          alert("Existing account with the given email already exists.");
-        }
-      } else {
-        alert("Invalid email address, please try again.");
-      }
+    if (
+      !firstName.value ||
+      !lastName.value ||
+      !dob.value ||
+      !email.value ||
+      !username.value ||
+      !password.value
+    ) {
+      alert("Please fill in all fields.");
+      return;
     }
+
+    const isFirstNameValid = await validateName(firstName.value);
+    const isLastNameValid = await validateName(lastName.value);
+    const isDOBValid = await validateDOB(dob.value);
+    const isUsernameValid = await validateUsername(username.value);
+    const isPasswordValid = await validatePassword(password.value);
+    console.log("Username:" + isUsernameValid);
+    console.log("Password:" + isPasswordValid);
+
+    if (!isFirstNameValid || !isLastNameValid) {
+      alert("Invalid name");
+      return;
+    }
+
+    if (!isDOBValid) {
+      alert("Invalid date of birth");
+      return;
+    }
+
+    if (!isUsernameValid) {
+      alert(
+        "Invalid username, must be 4 characters long and must not include special characters"
+      );
+      return;
+    }
+
+    if (!isPasswordValid) {
+      alert("Invalid password");
+      return;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z.-]{2,}$/;
+
+    if (emailRegex.test(email.value)) {
+      let user = await getUserViaEmail(email.value);
+
+      if (user === undefined) {
+        const newUser = new User(
+          firstName.value,
+          lastName.value,
+          username.value,
+          dob.value,
+          email.value,
+          password.value
+        );
+
+        alert("Successfully Created");
+        navigate("/Profile");
+      } else {
+        alert("Existing account with the given email already exists.");
+        return;
+      }
+    } else {
+      alert("Invalid email address, please try again.");
+      return;
+    }
+    setNameError("");
+    setDOBError("");
+    setUsernameError("");
+    setPasswordError("");
   };
 
   return (
@@ -128,25 +140,46 @@ function Text() {
             onChange={(e) => setLastName(e.target.value)}
           />
         </label>
+        {nameError && <p>{nameError}</p>}
         <div>
           <label>
-            DOB: <input type="date" name="dob" />
+            DOB:{" "}
+            <input
+              type="date"
+              name="dob"
+              value={dob}
+              onChange={(e) => setDOB(e.target.value)}
+            />
+          </label>
+          {dobError && <p>{dobError}</p>}
+        </div>
+        <div>
+          <label>
+            Email: <input name="email" />
           </label>
         </div>
         <div>
           <label>
-            Email: <input type="text" name="email" />
+            Username:{" "}
+            <input
+              name="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </label>
+          {usernameError && <p>{usernameError}</p>}
         </div>
         <div>
           <label>
-            Username: <input type="text" name="username" />
+            Password:{" "}
+            <input
+              type="password"
+              name="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </label>
-        </div>
-        <div>
-          <label>
-            Password: <input type="password" name="password" />
-          </label>
+          {passwordError && <p>{passwordError}</p>}
           <p className="password-requirements">
             Password must have an uppercase letter, a lowercase letter, a
             number, and be at least 8 characters long.
@@ -155,24 +188,15 @@ function Text() {
         <div className="login-link">
           <p>
             Already have an account?{" "}
-            <Link to="/login">Login here</Link>
+            <a href="src\Components\login.html">Login here</a>
           </p>
         </div>
       </div>
       <div className="create-button-container">
-        <a href="src\Components\Profile.tsx">
-          <button
-            className="create-button"
-            onClick={handleCreateClick}
-            disabled={isButtonDisabled} // Add this line
-          >
-            Create
-          </button>
-        </a>
+        <button className="create-button" onClick={handleCreateClick}>
+          Create
+        </button>
       </div>
-      {}
-      {/*         {nameError && <p>{nameError}</p>}
-       */}{" "}
     </div>
   );
 }
