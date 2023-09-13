@@ -21,7 +21,7 @@ export async function getUserViaEmail(userEmail) {
     const refEmail = ref(db, 'Users');
     const sanitizedEmail = userEmail.replaceAll(".",",");
     
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         onValue(refEmail, (snapshot) => {
             const dataEmail = snapshot.val();
 
@@ -53,7 +53,7 @@ export async function getUserViaUsername(username) {
     const db = getDatabase(fbConfig);
     const reference = ref(db, 'Users');
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         onValue(reference, (snapshot) => {
             const dataUsername = snapshot.val();
 
@@ -146,69 +146,153 @@ export async function getAllUsers() {
 }
 
 export async function validateName(name) {
-    const exp = /^[a-zA-Z-]$/;
+    const nameRegex = /^[a-zA-Z\s-]+$/;
+    let valid = false;
 
-    if(exp.test(name)) {
-        return true;
-    } else {
-        return false;
-    }
+    return new Promise((resolve) => {
+        if(nameRegex.test(name)) {
+            valid = true;
+            resolve(valid);
+            return;
+        } else {
+            resolve(valid);
+            return;
+        }
+    });
 }
 
 export async function validateDOB(dob) {
     const dateArray = dob.split("-");
     const givenDOB = new Date(dateArray[0], (dateArray[1] - 1), dateArray[2]);
     const currentDate = new Date();
-    let valid = false;
-    console.log(currentDate);
-    console.log(givenDOB);
+    let validDOB = false;
+    let validYear = false;
+    let validMonth = false;
+    let validDay = false;
 
-    if(givenDOB.getFullYear <= currentDate.getFullYear) {
-        console.log("Year checked");
-        if(givenDOB.getMonth >= 0 && givenDOB <= 11) {
-            console.log("Month checked");
-            const months30Days = [3, 5, 8, 10];
-            
-            if(givenDOB.getMonth === 1) {
-                if(!((year % 4 === 0) && (year % 100 !== 0) || (year % 400 === 0))) {
-                    if(givenDOB.getDate >= 1 && givenDOB.getDate <= 28) {
-                        console.log("Day checked");
-                        valid = validateAge(givenDOB, currentDate);
-                    } else {
-
-                    }
-                }
-            } else if(months30Days.includes(givenDOB.getMonth)) {
-                if(givenDOB.getDate >= 1 && givenDOB.getDate <= 30) {
-
+    return new Promise(async (resolve) => {
+        if(givenDOB.getFullYear() <= currentDate.getFullYear()) {
+            validYear = true;
+        }
+    
+        if(validYear) {
+            if(givenDOB.getFullYear() === currentDate.getFullYear()) {
+                if(givenDOB.getMonth() >= 0 && givenDOB.getMonth() <= currentDate.getMonth()) {
+                    validMonth = true;
                 }
             } else {
-
+                if(givenDOB.getMonth() >= 0 && givenDOB.getMonth() <= 11) {
+                    validMonth = true;
+                }
             }
         }
-    }
-
-    return valid;
+    
+        if(validYear && validMonth) {
+            const months30Days = [3, 5, 8, 10];
+    
+            if(givenDOB.getMonth() === 1) {
+                if(!((givenDOB.getFullYear() % 4 === 0) && (givenDOB.getFullYear() % 100 !== 0) || 
+                    (givenDOB.getFullYear() % 400 === 0))) {
+                    if(givenDOB.getDate() >= 1 && givenDOB.getDate() <= 28) {
+                        validDay = true;
+                    }
+                } else {
+                    if(givenDOB.getDate() >= 1 && givenDOB.getDate() <= 29) {
+                        validDay = true;
+                    }
+                }
+            } else if(months30Days.includes(givenDOB.getMonth())) {
+                if(givenDOB.getDate() >= 1 && givenDOB.getDate() <= 30) {
+                    validDay = true;
+                }
+            } else {
+                if(givenDOB.getDate() >= 1 && givenDOB.getDate() <= 31) {
+                    validDay = true;
+                }
+            }
+        }
+    
+        if(validDay && validMonth && validYear) {
+            validDOB = await validateAge(givenDOB, currentDate);
+        }
+    
+        resolve(validDOB);
+        return;
+    });
 }
 
 export async function validateAge(givenDOB, currentDate) {
-    if((currentDate.getFullYear - givenDOB.getFullYear) > 13) {
-        return true;
-    } else if ((currentDate.getFullYear - givenDOB.getFullYear) === 13) {
-        if(currentDate.getMonth > givenDOB.getMonth) {
-            return false;
-        } else if(currentDate.getMonth === givenDOB.getMonth) {
-            if(currentDate.getDate > givenDOB.getDate) {
-                return false;
-            } else if(currentDate.getDate === givenDOB.getDate) {
-                return true;
+    let validAge = false;
+
+    return new Promise((resolve) => {
+        if((currentDate.getFullYear() - givenDOB.getFullYear()) >= 13) {
+            if((currentDate.getFullYear() - givenDOB.getFullYear()) === 13) {
+                if(currentDate.getMonth() === givenDOB.getMonth()) {
+                    if(currentDate.getDate() === givenDOB.getDate()) {
+                        validAge = true;
+                    }
+                }
             } else {
-                return true;
+                validAge = true;
             }
-        } else {
-            return true;
         }
-    } else {
-        return false;
-    }
+
+        resolve(validAge);
+        return;
+    });
+}
+
+export async function validateEmail(email) {
+    let validEmail = false;
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z.-]{2,}$/;
+
+    return new Promise((resolve) => {
+        if(emailRegex.test(email)) {
+            validEmail = true;
+        }
+
+        resolve(validEmail);
+        return;
+    });
+}
+
+export async function validateUsername(username) {
+    let validUsername = false;
+    const usernameRegex = /^[a-zA-Z0-9_]*$/;
+
+    return new Promise((resolve) => {
+        if(username.length >= 4 && username.length <= 20) {
+            if(usernameRegex.test(username)) {
+                validUsername = true;
+            }
+        }
+
+        resolve(validUsername);
+        return;
+    });
+}
+
+export async function validatePassword(password) {
+    let validPassword = false;
+    const uppercase = /[A-Z]/;
+    const lowercase = /[a-z]/;
+    const digit = /[0-9]/;
+    const charsAndSpaces = /[^A-Za-z0-9]/;
+
+    return new Promise((resolve) => {
+        if(password.length >= 8) {
+            if(uppercase.test(password)) {
+                if(lowercase.test(password)) {
+                    if(digit.test(password)) {
+                        if(!(charsAndSpaces.test(password))) {
+                            validPassword = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        resolve(validPassword);
+        return;
+    });
 }
