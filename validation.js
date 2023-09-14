@@ -284,9 +284,7 @@ export async function validatePassword(password) {
             if(uppercase.test(password)) {
                 if(lowercase.test(password)) {
                     if(digit.test(password)) {
-                        if(!(charsAndSpaces.test(password))) {
-                            validPassword = true;
-                        }
+                        validPassword = true;
                     }
                 }
             }
