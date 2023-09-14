@@ -4,13 +4,13 @@ import {
   saveUserData,
   validateName,
   validateDOB,
-  login,
   validateUsername,
   validatePassword,
+  validateEmail,
 } from "./validation";
 import React, { useState } from "react";
 import User from "./user";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function Text() {
   const [firstName, setFirstName] = useState("");
@@ -34,7 +34,9 @@ function Text() {
     const lastName = document.querySelector(
       'input[name="lname"]'
     ) as HTMLInputElement;
-    const dob = document.querySelector('input[name="dob"]') as HTMLInputElement;
+    const dob = document.querySelector(
+      'input[name="dob"]'
+    ) as HTMLInputElement;
     const email = document.querySelector(
       'input[name="email"]'
     ) as HTMLInputElement;
@@ -62,8 +64,14 @@ function Text() {
     const isDOBValid = await validateDOB(dob.value);
     const isUsernameValid = await validateUsername(username.value);
     const isPasswordValid = await validatePassword(password.value);
-    console.log("Username:" + isUsernameValid);
-    console.log("Password:" + isPasswordValid);
+    const isEmailValid = await validateEmail(email.value);
+
+    console.log("First name:" + firstName.value + "(" + isFirstNameValid + ")");
+    console.log("Last name:" + lastName.value + "(" + isLastNameValid + ")");
+    console.log("DOB:" + dob.value + "(" + isDOBValid + ")");
+    console.log("Email:" + email.value + "(" + isEmailValid + ")");
+    console.log("Username:" + username.value + "(" + isUsernameValid + ")");
+    console.log("Password:" + password.value + "(" + isPasswordValid + ")");
 
     if (!isFirstNameValid || !isLastNameValid) {
       alert("Invalid name");
@@ -103,6 +111,7 @@ function Text() {
         );
 
         alert("Successfully Created");
+        saveUserData(newUser);
         navigate("/Profile");
       } else {
         alert("Existing account with the given email already exists.");
@@ -155,13 +164,18 @@ function Text() {
         </div>
         <div>
           <label>
-            Email: <input name="email" />
+            Email: 
+            <input 
+              type="text"
+              name="email" 
+            />
           </label>
         </div>
         <div>
           <label>
             Username:{" "}
             <input
+              type="text"
               name="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -188,7 +202,7 @@ function Text() {
         <div className="login-link">
           <p>
             Already have an account?{" "}
-            <a href="src\Components\login.html">Login here</a>
+            <Link to="/login">Login here</Link>
           </p>
         </div>
       </div>
