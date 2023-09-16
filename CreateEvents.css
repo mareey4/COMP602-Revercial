@@ -1,7 +1,4 @@
-/* CSS for Profile.tsx */
-
-/* Container styles */
-.profile-container {
+.events-container {
     display: flex;
     height: 100vh;
   }
@@ -13,6 +10,7 @@
   }
   
   .main-content h1 {
-    font-size: 28px;
+    font-size: 32px;
     margin-bottom: 20px;
+    color: #fff;
   }

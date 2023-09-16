@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom"; // Import Link from React Router
 import "./Profile.css";
+import "./NavBar.css";
 
 function Profile() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -22,10 +24,14 @@ function Profile() {
         <h2></h2>
         <ul>
           <li>
-            <a href="#">Create Event</a>
+            <Link to="/create-events">Create Event</Link>{" "}
+            {/* Link to CreateEvents */}
           </li>
           <li>
             <a href="#">Settings</a>
+          </li>
+          <li>
+            <Link to="/Login">Log out</Link>{" "}
           </li>
         </ul>
       </div>
