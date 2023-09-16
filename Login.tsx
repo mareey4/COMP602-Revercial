@@ -1,6 +1,6 @@
 import "./style.css";
 import { login } from "./validation.js";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -50,6 +50,12 @@ const Login = () => {
         >
           Login
         </button>
+        <div className = "need-account">
+          <p>
+            Don't have an account?
+            <Link to="/create-account"> Sign up here!</Link>
+          </p>
+        </div>
         <div className="forgot-links">
           <a href="#">Forgot Username or Forgot Password</a>
         </div>
