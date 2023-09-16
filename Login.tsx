@@ -1,4 +1,4 @@
-import "./Login.css";
+import "./style.css";
 import { login } from "./validation.js";
 
 const Login = () => {
