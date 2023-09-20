@@ -7,6 +7,7 @@ import {
 import TextComponent from "./Components/Text"; // Import your create account component
 import Profile from "./Components/Profile"; // Import your Profile component
 import LoginComponent from "./Components/Login"; // Import your Login component
+import SupportComponent from "./Components/Support"; // Import your Support component
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
         <Route path="/create-account" element={<TextComponent />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/login" element={<LoginComponent />} />
+        <Route path="/support" element={<SupportComponent />} />
       </Routes>
     </Router>
   );
