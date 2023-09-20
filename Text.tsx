@@ -26,15 +26,15 @@ function Text() {
   const navigate = useNavigate();
 
   const handleCreateClick = async () => {
-    console.log("Create button clicked");
-
     const firstName = document.querySelector(
       'input[name="fname"]'
     ) as HTMLInputElement;
     const lastName = document.querySelector(
       'input[name="lname"]'
     ) as HTMLInputElement;
-    const dob = document.querySelector('input[name="dob"]') as HTMLInputElement;
+    const dob = document.querySelector(
+      'input[name="dob"]'
+    ) as HTMLInputElement;
     const email = document.querySelector(
       'input[name="email"]'
     ) as HTMLInputElement;
@@ -45,6 +45,8 @@ function Text() {
       'input[name="password"]'
     ) as HTMLInputElement;
 
+    let errorMsg = "Error:\n";
+
     if (
       !firstName.value ||
       !lastName.value ||
@@ -53,8 +55,7 @@ function Text() {
       !username.value ||
       !password.value
     ) {
-      alert("Please fill in all fields.");
-      return;
+      errorMsg += "  - Please fill in all fields.\n";
     }
 
     const isFirstNameValid = await validateName(firstName.value);
@@ -62,60 +63,64 @@ function Text() {
     const isDOBValid = await validateDOB(dob.value);
     const isUsernameValid = await validateUsername(username.value);
     const isPasswordValid = await validatePassword(password.value);
-    console.log("Username:" + isUsernameValid);
-    console.log("Password:" + isPasswordValid);
+    const isEmailValid = await validateEmail(email.value);
 
     if (!isFirstNameValid || !isLastNameValid) {
-      alert("Invalid name");
-      return;
+      errorMsg += "  - Invalid name(s).\n";
     }
 
     if (!isDOBValid) {
-      alert("Invalid date of birth");
-      return;
+      errorMsg += "  - Invalid date of birth.\n";
     }
 
     if (!isUsernameValid) {
-      alert(
-        "Invalid username, must be 4 characters long and must not include special characters"
-      );
-      return;
+      errorMsg += "  - Invalid username, must be 4 characters long and must not include special characters.\n";
     }
 
     if (!isPasswordValid) {
-      alert("Invalid password");
-      return;
+      errorMsg += "  - Invalid password.\n";
     }
 
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z.-]{2,}$/;
+    if (!isEmailValid) {
+      errorMsg += "Invalid email address.";
+    }
 
-    if (emailRegex.test(email.value)) {
-      let user = await getUserViaEmail(email.value);
+    if (
+        isFirstNameValid && 
+        isLastNameValid && 
+        isDOBValid &&
+        isUsernameValid &&
+        isPasswordValid &&
+        isEmailValid
+      ) {
+      let resultEmail = await getUserViaEmail(email.value);
+      let resultUsername = await getUserViaUsername(username.value);
 
-      if (user === undefined) {
-        const newUser = new User(
-          firstName.value,
-          lastName.value,
-          username.value,
-          dob.value,
-          email.value,
-          password.value
-        );
-
-        alert("Successfully Created");
-        navigate("/Profile");
+      if (resultEmail === undefined) {
+        if(resultUsername === undefined) {
+          const newUser = new User(
+            firstName.value,
+            lastName.value,
+            username.value,
+            dob.value,
+            email.value,
+            password.value
+          );
+  
+          alert("Successfully Created");
+          saveUserData(newUser); // To save to database
+          navigate("/Profile"); // Redirect to Profile Page
+        } else {
+          alert("Existing account with the given username already exists.");
+        }
       } else {
         alert("Existing account with the given email already exists.");
         return;
       }
     } else {
-      alert("Invalid email address, please try again.");
+      alert(errorMsg);
       return;
     }
-    setNameError("");
-    setDOBError("");
-    setUsernameError("");
-    setPasswordError("");
   };
 
   return (
