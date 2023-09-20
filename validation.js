@@ -16,6 +16,51 @@ export async function saveUserData(newUser) {
     });
 }
 
+export async function saveSupportInfo(query) {
+    const db = getDatabase(fbConfig);
+    const refSupport = databaseRef(db, 'Support/' + query.subject + '/' + query.ticketID);
+
+    set(refSupport, {
+        Email: query.email,
+        Subject: query.subject,
+        Description: query.description,
+        Files: query.fileNames
+    });
+}
+
+export async function saveSupportAttachments(subject, ticketID, file) {
+    const storage = getStorage(fbConfig);
+    const refSupport = storageRef(storage, 'Support/' + subject + '/' + ticketID + '/' + file.name);
+
+    await uploadBytes(refSupport, file);
+}
+
+export async function checkExistingTicketID(ticketID) {
+    const db = getDatabase(fbConfig);
+    const topicOptions = [
+        'Account Issues',
+        'Privacy and Security',
+        'Content Management',
+        'Technical Problems',
+        'Messaging and Communication',
+        'Feedback and Suggestions',
+        'Report Technical Glitches',
+        'Other'
+    ];
+
+    const promises = topicOptions.map(async (topicOptions) => {
+        const refSubject = databaseRef(db, 'Support/' + topicOptions);
+        const refTicket = child(refSubject, ticketID);
+        const snapshot = await get(refTicket);
+        return snapshot.exists();
+    });
+
+    const result = await Promise.all(promises);
+    const validID = result.some((exists) => exists);
+
+    return validID;
+}
+
 export async function getUserViaEmail(userEmail) {
     const db = getDatabase(fbConfig);
     const refEmail = ref(db, 'Users');
