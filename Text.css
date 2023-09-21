@@ -1,5 +1,4 @@
 /* Text.css */
-
 .container {
   display: flex;
   flex-direction: column;
@@ -18,6 +17,7 @@ h1 {
   color: white;
   text-align: left;
 }
+
 
 label {
   display: block;
@@ -51,7 +51,7 @@ input[type="password"] {
 }
 
 p {
-  color: white;
+  color:white;
   margin-top: 10px;
   font-size: 14px;
 }
@@ -60,15 +60,12 @@ p a {
   color: #007bff;
 }
 
-/* The following block was commented out */
-/*
-body {
+/* body {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
 }
-*/
 
 .wrapper h1 {
   font-size: 36px;
@@ -76,24 +73,36 @@ body {
   color: white;
 }
 
-.wrapper-2 h1 {
+.wrapper-2 h1{
   font-size: 15px;
   width: 270px;
+  font-style: white;
+
+  margin-top: 20px; 
+
   color: white;
-  margin-top: 20px;
   text-align: left;
 }
 
 .password-requirements {
   font-size: 9px;
-  color: white;
+  color: white; 
   margin-top: 1px;
+}
+
+.create-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 .create-button-container {
   display: flex;
   justify-content: flex-end;
-  margin-top: 10px;
+  margin-top: 10px; 
 }
 
 label {
@@ -109,4 +118,4 @@ label {
 
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
-}
+} */

@@ -1,4 +1,4 @@
-import "./Text.css";
+import "../Front End/Text.css";
 import {
   getUserViaEmail,
   saveUserData,
@@ -9,7 +9,7 @@ import {
   validateEmail,
   getUserViaUsername,
 } from "./validation";
-import { useState } from "react";
+import React, { useState } from "react";
 import User from "./user";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -20,8 +20,10 @@ function Text() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  // React Router's navigate function for routing
   const navigate = useNavigate();
 
+  // Function to handle the "Create" button click
   const handleCreateClick = async () => {
     const firstName = document.querySelector(
       'input[name="fname"]'
@@ -42,6 +44,7 @@ function Text() {
 
     let errorMsg = "Error:\n";
 
+    // Check if any required fields are empty
     if (
       !firstName.value ||
       !lastName.value ||
@@ -53,6 +56,7 @@ function Text() {
       errorMsg += "  - Please fill in all fields.\n";
     }
 
+    // Validate user inputs using validation functions
     const isFirstNameValid = await validateName(firstName.value);
     const isLastNameValid = await validateName(lastName.value);
     const isDOBValid = await validateDOB(dob.value);
@@ -81,6 +85,7 @@ function Text() {
       errorMsg += "  - Invalid email address.";
     }
 
+    // If all validations pass, proceed with creating the user
     if (
       isFirstNameValid &&
       isLastNameValid &&
@@ -94,6 +99,7 @@ function Text() {
 
       if (resultEmail === undefined) {
         if (resultUsername === undefined) {
+          // Create a new User object
           const newUser = new User(
             firstName.value,
             lastName.value,
@@ -105,9 +111,10 @@ function Text() {
             undefined
           );
 
+          // Display success message, save user data, and navigate to the profile page
           alert("Successfully Created");
-          saveUserData(newUser); // To save to database
-          navigate("/profile"); // Redirect to Profile Page
+          saveUserData(newUser);
+          navigate("/profile");
         } else {
           alert("Existing account with the given username already exists.");
         }
@@ -116,11 +123,13 @@ function Text() {
         return;
       }
     } else {
+      // Display error messages for validation failures
       alert(errorMsg);
       return;
     }
   };
 
+  // JSX component with valid questions to create an account
   return (
     <div className="container">
       <h1>Create Account</h1>
