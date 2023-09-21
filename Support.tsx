@@ -1,6 +1,6 @@
 import './Support.css';
 import React, { useState, useRef } from 'react';
-import { saveSupportInfo, saveSupportAttachments, checkExistingTicketID, validateEmail } from "./validation";
+import { saveSupportInfo, saveSupportAttachments, checkExistingTicketID, validateEmail, validateDescription } from "./validation";
 import { useNavigate } from "react-router-dom";
 import Query from "./query";
 
@@ -129,7 +129,7 @@ function Support() {
         const email = document.querySelector('input[name="email"]') as HTMLInputElement;
         let validEmail = await validateEmail(email.value);
         let validSubject = false;
-        let validDescription = false;
+        let validDescription = await validateDescription(description);
         let errorMsg = "Error:\n";
 
         if(!validEmail) {
@@ -142,9 +142,7 @@ function Support() {
             errorMsg += "  - Please select a subject.\n";
         }
 
-        if(charCount > 0) {
-            validDescription = true;
-        } else {
+        if(!validDescription) {
             errorMsg += "  - Please describe your query.\n";
         }
 
@@ -218,6 +216,7 @@ function Support() {
                         value={description}
                         onChange={handleTextAreaChange}
                         placeholder={isPlaceholderVisible ? 'Write description here...' : ''}
+                        maxLength={500}
                     />
                     <div className="charCount">
                         {charCount}/500 characters
