@@ -157,7 +157,6 @@ export async function getUserViaUsername(username) {
     });
 }
 
-
 export async function deleteAccount(user) {
     const db = getDatabase(fbConfig);
     const refUsers = databaseRef(db, 'Users');
