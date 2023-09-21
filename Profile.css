@@ -6,6 +6,44 @@
     height: 100vh;
   }
   
+  /* Sidebar styles */
+  .sidebar {
+    width: 250px;
+    background-color: #85C25C;
+    color: #fff;
+    padding: 20px;
+    position: fixed;
+    left: -250px; /* Initially, push it to the left side */
+    top: 0;
+    height: 100%;
+    overflow-y: auto;
+    transition: left 0.3s ease; /* Transition left property */
+  }
+  
+  .profile-container.sidebar-open .sidebar {
+    left: 0;
+  }
+  
+  .sidebar h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .sidebar ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .sidebar li {
+    margin-bottom: 10px;
+  }
+  
+  .sidebar a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 18px;
+  }
+  
   /* Main content styles */
   .main-content {
     flex: 1;
@@ -15,4 +53,80 @@
   .main-content h1 {
     font-size: 28px;
     margin-bottom: 20px;
+  }
+  
+  /* Sidebar Toggle Button styles */
+  .sidebar-toggle {
+    cursor: pointer;
+    padding: 10px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background-color: #85C25C;
+    z-index: 1;
+  }
+  
+  .toggle-lines {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #fff;
+    span {
+      width: 100%;
+      height: 3px;
+      background-color: #fff;
+      transition: transform 0.3s ease;
+    }
+  }
+  
+  .profile-container.sidebar-open .toggle-lines span:nth-child(1) {
+    transform: rotate(45deg) translate(3px, 3px);
+  }
+  
+  .profile-container.sidebar-open .toggle-lines span:nth-child(2) {
+    opacity: 0;
+  }
+  
+  .profile-container.sidebar-open .toggle-lines span:nth-child(3) {
+    transform: rotate(-45deg) translate(3px, -3px);
+  }
+  
+  .main-content {
+    flex: 1;
+    padding: 20px;
+    position: relative; /* Add this */
+  }
+  
+  .profile-info {
+    position: absolute; /* Position the profile info */
+    top: 20px; /* Adjust the top position as needed */
+    left: 860px; /* Adjust the right position as needed */
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    color: #fff;
+  }
+  
+  .profile-pic {
+    width: 60px; /* Set the size of the circular profile picture */
+    height: 60px; /* Set the size of the circular profile picture */
+    border-radius: 50%; /* Make it circular */
+    margin-right: 10px; /* Add spacing between the picture and text */
+  }
+  
+  .user-details {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .user-name {
+    font-size: 24px;
+    margin: 0;
+  }
+  
+  .user-username {
+    font-size: 18px;
+    margin: 0;
   }
