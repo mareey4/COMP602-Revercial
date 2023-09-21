@@ -1,16 +1,67 @@
-.events-container {
-    display: flex;
-    height: 100vh;
-  }
+.wrapper {
+  text-align: center;
+  width: 600px;
+}
+
+.wrapper h1 {
+  font-size: 36px;
+  text-align: center;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.wrapper-2 {
+  width: 370px;
+  text-align: center;
+  margin-top: 20px; 
+}
+
+.wrapper-2 h2 {
+  font-size: 15px;
+  color: white;
+  text-align: center;
+}
+
+.create-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 20px 0;
+  margin-right: 50px; 
+}
+
+.create-button-container {
+  text-align: center; 
+  display: flex;
+  justify-content: space-between;  margin-top: 50px;
+}
+
+input[type="date"] {
+  width: 92%; /* Date input takes the full width */
+  padding: 10px;
+  margin-bottom: 10px;
   
-  /* Main content styles */
-  .main-content {
-    flex: 1;
-    padding: 20px;
-  }
-  
-  .main-content h1 {
-    font-size: 32px;
-    margin-bottom: 20px;
-    color: #fff;
-  }
+}
+
+input[type="text"] {
+  width: 92%; /* Text input takes the full width */
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+/* Textarea can have a different width if needed */
+textarea {
+  width: 90%; /* Textarea takes the full width */
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+select {
+  width: 92%;
+  padding: 10px;
+  background-color: #fff; /* Background color for the dropdown */
+  border: 1px solid #ccc; /* Add a border for visual separation */
+}
