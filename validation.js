@@ -404,22 +404,3 @@ export function isValidDate(dateString) {
   export function validateDescription(description) {
     return description.length <= 100;
   }
-
-  export async function saveSupportInfo(query) {
-    const db = getDatabase(fbConfig);
-    const refSupport = databaseRef(db, 'Support/' + query.subject + '/' + query.ticketID);
-
-    set(refSupport, {
-        Email: query.email,
-        Subject: query.subject,
-        Description: query.description,
-        Files: query.fileNames
-    });
-}
-
-export async function saveSupportAttachments(subject, ticketID, file) {
-    const storage = getStorage(fbConfig);
-    const refSupport = storageRef(storage, 'Support/' + subject + '/' + ticketID + '/' + file.name);
-
-    await uploadBytes(refSupport, file);
-}
