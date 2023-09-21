@@ -18,10 +18,6 @@ function Text() {
   const [dob, setDOB] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [nameError, setNameError] = useState("");
-  const [dobError, setDOBError] = useState("");
-  const [usernameError, setUsernameError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
 
   const navigate = useNavigate();
 
@@ -74,7 +70,7 @@ function Text() {
     }
 
     if (!isUsernameValid) {
-      errorMsg += "  - Invalid username, must be 4 characters long and must not include special characters.\n";
+      errorMsg += "  - Invalid username, must be 4 characters long and must not include special \n    characters.\n";
     }
 
     if (!isPasswordValid) {
@@ -82,7 +78,7 @@ function Text() {
     }
 
     if (!isEmailValid) {
-      errorMsg += "Invalid email address.";
+      errorMsg += "  - Invalid email address.";
     }
 
     if (
@@ -104,12 +100,14 @@ function Text() {
             username.value,
             dob.value,
             email.value,
-            password.value
+            password.value,
+            false,
+            undefined
           );
   
           alert("Successfully Created");
           saveUserData(newUser); // To save to database
-          navigate("/Profile"); // Redirect to Profile Page
+          navigate("/profile"); // Redirect to Profile Page
         } else {
           alert("Existing account with the given username already exists.");
         }
