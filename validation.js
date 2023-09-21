@@ -401,5 +401,5 @@ export function isValidDate(dateString) {
   }
   
   export function validateDescription(description) {
-    return description.length <= 100;
+    return description.length <= 500;
   }
