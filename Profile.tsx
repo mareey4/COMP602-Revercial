@@ -1,15 +1,37 @@
-import { useState } from "react";
-import { Link } from "react-router-dom"; // Import Link from React Router
+import { useState, useEffect } from "react";
+import { useLocation, Link } from "react-router-dom"; // Import Link from React Router
+import { getProfilePic } from "./validation";
 import "./Profile.css";
 import "./NavBar.css";
-import User from "./user";
 
-function Profile(user: User) {
+function Profile() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profilePicUrl, setProfilePicUrl] = useState(null);
+  const location = useLocation();
+  const user = location.state?.user;
+  const unsanitizedEmail = user.email.replaceAll(",", ".");
+  const unsanitizedPFPName = user.profilePic.replaceAll(",", ".");
+
+  useEffect(() => {
+    async function loadProfilePic() {
+      const url = await getProfilePic(unsanitizedEmail, unsanitizedPFPName);
+      if (url) {
+        setProfilePicUrl(url);
+      }
+    }
+
+    loadProfilePic();
+  }, [unsanitizedEmail, unsanitizedPFPName]);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
+
+  const handleLogout = () =>{
+    if (user) {
+      user.loginStatus = false;
+    }
+  }
 
   return (
     <div className={`profile-container ${sidebarOpen ? "sidebar-open" : ""}`}>
@@ -35,7 +57,7 @@ function Profile(user: User) {
             <Link to="/Privacy">Privacy Settings</Link>
           </li>
           <li>
-            <Link to="/Login">Log out</Link>{" "}
+            <Link to="/Login" onClick={handleLogout}>Log out</Link>{" "}
           </li>
         </ul>
       </div>
@@ -43,6 +65,11 @@ function Profile(user: User) {
       {/* Main Content */}
       <div className="main-content">
         <h1>Profile</h1>
+
+        {/* Display the profile picture */}
+        {profilePicUrl && (
+          <img src={profilePicUrl} alt="Profile" className="profile-pic" />
+        )}
       </div>
     </div>
   );
