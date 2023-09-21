@@ -1,25 +1,96 @@
-import { getDatabase, ref as databaseRef, get, set, onValue, remove, child } from 'firebase/database'
-import {getStorage, uploadBytes, ref as storageRef} from 'firebase/storage';
+import { getDatabase, ref as databaseRef, get, set, onValue, remove, child } from 'firebase/database';
+import { getStorage, uploadBytes, getDownloadURL, ref as storageRef } from 'firebase/storage';
 import { fbConfig } from './firebase';
-import User from './user'
+import User from './user';
 
 export async function saveUserData(newUser) {
     const db = getDatabase(fbConfig);
     const sanitizedEmail = newUser.email.replaceAll(".",",");
-    const referenceEmail = ref(db, 'Users/' + sanitizedEmail);
+    const referenceEmail = databaseRef(db, 'Users/' + sanitizedEmail);
 
     set(referenceEmail, {
         Name: newUser.first_name,
         Surname: newUser.surname,
         DOB: newUser.date_of_birth,
         Username: newUser.username,
-        Password: newUser.password
+        Password: newUser.password,
+        Login_Status: newUser.loginStatus,
+        Profile_Pic: newUser.profilePic.name
+    });
+}
+
+export async function saveSupportInfo(query) {
+    const db = getDatabase(fbConfig);
+    const refSupport = databaseRef(db, 'Support/' + query.subject + '/' + query.ticketID);
+
+    set(refSupport, {
+        Email: query.email,
+        Subject: query.subject,
+        Description: query.description,
+        Files: query.fileNames
+    });
+}
+
+export async function saveSupportAttachments(subject, ticketID, file) {
+    const storage = getStorage(fbConfig);
+    const refSupport = storageRef(storage, 'Support/' + subject + '/' + ticketID + '/' + file.name);
+
+    await uploadBytes(refSupport, file);
+}
+
+export async function checkExistingTicketID(ticketID) {
+    const db = getDatabase(fbConfig);
+    const topicOptions = [
+        'Account Issues',
+        'Privacy and Security',
+        'Content Management',
+        'Technical Problems',
+        'Messaging and Communication',
+        'Feedback and Suggestions',
+        'Report Technical Glitches',
+        'Other'
+    ];
+
+    const promises = topicOptions.map(async (topicOptions) => {
+        const refSubject = databaseRef(db, 'Support/' + topicOptions);
+        const refTicket = child(refSubject, ticketID);
+        const snapshot = await get(refTicket);
+        return snapshot.exists();
+    });
+
+    const result = await Promise.all(promises);
+    const validID = result.some((exists) => exists);
+
+    return validID;
+}
+
+export async function setProfilePic(email, file) {
+    const storage = getStorage(fbConfig);
+    const refUser = storageRef(storage, 'Users/' + email + '/' + 'ProfilePic/' + file.name);
+
+    await uploadBytes(refUser, file);
+}
+
+export async function getProfilePic(email, filename) {
+    const storage = getStorage(fbConfig);
+    const refUser = storageRef(storage, 'Users/' + email + '/ProfilePic/' + filename);
+
+    return new Promise(async (resolve) => {
+        try {
+            const downloadURL = await getDownloadURL(refUser);
+            resolve(downloadURL);
+            return;
+        } catch {
+            console.error("An error occurred whilst retrieving profile picture.");
+            resolve(undefined);
+            return;
+        }
     });
 }
 
 export async function getUserViaEmail(userEmail) {
     const db = getDatabase(fbConfig);
-    const refEmail = ref(db, 'Users');
+    const refEmail = databaseRef(db, 'Users');
     const sanitizedEmail = userEmail.replaceAll(".",",");
     
     return new Promise((resolve) => {
@@ -36,7 +107,9 @@ export async function getUserViaEmail(userEmail) {
                         userData.Username,
                         userData.DOB,
                         email,
-                        userData.Password
+                        userData.Password,
+                        userData.Login_Status,
+                        userData.Profile_Pic
                     );
 
                     resolve(user);
@@ -52,7 +125,7 @@ export async function getUserViaEmail(userEmail) {
 
 export async function getUserViaUsername(username) {
     const db = getDatabase(fbConfig);
-    const reference = ref(db, 'Users');
+    const reference = databaseRef(db, 'Users');
 
     return new Promise((resolve) => {
         onValue(reference, (snapshot) => {
@@ -68,7 +141,9 @@ export async function getUserViaUsername(username) {
                         userData.Username,
                         userData.DOB,
                         email,
-                        userData.Password
+                        userData.Password,
+                        userData.Login_Status,
+                        userData.Profile_Pic
                     );
 
                     resolve(user);
@@ -85,7 +160,7 @@ export async function getUserViaUsername(username) {
 
 export async function deleteAccount(user) {
     const db = getDatabase(fbConfig);
-    const refUsers = ref(db, 'Users');
+    const refUsers = databaseRef(db, 'Users');
 
     onValue(refUsers, (snapshot) => {
         const users = snapshot.val();
@@ -99,24 +174,27 @@ export async function deleteAccount(user) {
 }
 
 export async function login(id, password) {
-    let validLogin = false;
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z.-]{2,}$/;
+    let user;
 
-    if(emailRegex.test(id)) {
-        const user = await getUserViaEmail(id);
-
-        if(user !== undefined && user.password === password) {
-            validLogin = true;
+    return new Promise(async (resolve) => {
+        if(emailRegex.test(id)) {
+            user = await getUserViaEmail(id);
+    
+            if(user !== undefined && user.password === password) {
+                user.loginStatus = true;
+            }
+        } else {
+            user = await getUserViaUsername(id);
+    
+            if(user !== undefined && user.password === password) {
+                user.loginStatus = true;
+            }
         }
-    } else {
-        const user = await getUserViaUsername(id);
 
-        if(user !== undefined && user.password === password) {
-            validLogin = true;
-        }
-    }
-
-    return validLogin;
+        resolve(user);
+        return;
+    });
 }
 
 export async function getAllUsers() {
