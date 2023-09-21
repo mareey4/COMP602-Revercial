@@ -4,11 +4,12 @@ import {
   saveUserData,
   validateName,
   validateDOB,
-  login,
   validateUsername,
   validatePassword,
+  validateEmail,
+  getUserViaUsername,
 } from "./validation";
-import React, { useState } from "react";
+import { useState } from "react";
 import User from "./user";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -28,9 +29,7 @@ function Text() {
     const lastName = document.querySelector(
       'input[name="lname"]'
     ) as HTMLInputElement;
-    const dob = document.querySelector(
-      'input[name="dob"]'
-    ) as HTMLInputElement;
+    const dob = document.querySelector('input[name="dob"]') as HTMLInputElement;
     const email = document.querySelector(
       'input[name="email"]'
     ) as HTMLInputElement;
@@ -70,7 +69,8 @@ function Text() {
     }
 
     if (!isUsernameValid) {
-      errorMsg += "  - Invalid username, must be 4 characters long and must not include special \n    characters.\n";
+      errorMsg +=
+        "  - Invalid username, must be 4 characters long and must not include special \n    characters.\n";
     }
 
     if (!isPasswordValid) {
@@ -82,18 +82,18 @@ function Text() {
     }
 
     if (
-        isFirstNameValid && 
-        isLastNameValid && 
-        isDOBValid &&
-        isUsernameValid &&
-        isPasswordValid &&
-        isEmailValid
-      ) {
+      isFirstNameValid &&
+      isLastNameValid &&
+      isDOBValid &&
+      isUsernameValid &&
+      isPasswordValid &&
+      isEmailValid
+    ) {
       let resultEmail = await getUserViaEmail(email.value);
       let resultUsername = await getUserViaUsername(username.value);
 
       if (resultEmail === undefined) {
-        if(resultUsername === undefined) {
+        if (resultUsername === undefined) {
           const newUser = new User(
             firstName.value,
             lastName.value,
@@ -104,7 +104,7 @@ function Text() {
             false,
             undefined
           );
-  
+
           alert("Successfully Created");
           saveUserData(newUser); // To save to database
           navigate("/profile"); // Redirect to Profile Page
@@ -122,77 +122,69 @@ function Text() {
   };
 
   return (
-    <div>
-      <div className="wrapper">
-        <h1>Create Account</h1>
-      </div>
-      <div className="wrapper-2">
-        <label>
-          First Name:{" "}
-          <input
-            type="text"
-            name="fname"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-          />{" "}
-          Last Name:{" "}
-          <input
-            type="text"
-            name="lname"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-          />
-        </label>
-        {nameError && <p>{nameError}</p>}
-        <div>
-          <label>
-            DOB:{" "}
-            <input
-              type="date"
-              name="dob"
-              value={dob}
-              onChange={(e) => setDOB(e.target.value)}
-            />
-          </label>
-          {dobError && <p>{dobError}</p>}
-        </div>
-        <div>
-          <label>
-            Email: <input name="email" />
-          </label>
-        </div>
-        <div>
-          <label>
-            Username:{" "}
-            <input
-              name="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </label>
-          {usernameError && <p>{usernameError}</p>}
-        </div>
-        <div>
-          <label>
-            Password:{" "}
-            <input
-              type="password"
-              name="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </label>
-          {passwordError && <p>{passwordError}</p>}
-          <p className="password-requirements">
-            Password must have an uppercase letter, a lowercase letter, a
-            number, and be at least 8 characters long.
-          </p>
-        </div>
-        <div className="login-link">
-          <p>
-            <Link to="/Login">Already have an account?</Link>{" "}
-          </p>
-        </div>
+    <div className="container">
+      <h1>Create Account</h1>
+      <label>
+        First Name:{" "}
+        <input
+          type="text"
+          name="fname"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+        ></input>
+      </label>
+
+      <label>
+        Last Name:{" "}
+        <input
+          type="text"
+          name="lname"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+        ></input>
+      </label>
+
+      <label>
+        DOB:{" "}
+        <input
+          type="date"
+          name="dob"
+          value={dob}
+          onChange={(e) => setDOB(e.target.value)}
+        ></input>{" "}
+      </label>
+      <label>
+        Email:
+        <input type="text" name="email" />
+      </label>
+
+      <label>
+        Username:{" "}
+        <input
+          type="text"
+          name="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        ></input>{" "}
+      </label>
+
+      <label>
+        Password:{" "}
+        <input
+          type="password"
+          name="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        ></input>{" "}
+      </label>
+      <p className="password-requirements">
+        Password must have an uppercase letter, a lowercase letter, a number,
+        and be at least 8 characters long.
+      </p>
+      <div className="login-link">
+        <p>
+          Already have an account? <Link to="/login">Login here</Link>
+        </p>
       </div>
       <div className="create-button-container">
         <button className="create-button" onClick={handleCreateClick}>
