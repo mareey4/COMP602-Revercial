@@ -1,4 +1,4 @@
-<h3 align="center">COMP602-Revercial</h3>
+<h1 align="center">COMP602-Revercial</h3>
 
   <p align="center">
     A social media platform to initiate connections with others to then facilitate and encourage in-person offline     interactions through the use of a point-based system.
@@ -75,9 +75,6 @@ This is an example of how to list things you need to use the software and how to
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
