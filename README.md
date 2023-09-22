@@ -1,1 +1,88 @@
-# COMP602-Revercial
+<h3 align="center">COMP602-Revercial</h3>
+
+  <p align="center">
+    A social media platform to initiate connections with others to then facilitate and encourage in-person offline     interactions through the use of a point-based system.
+    <br />
+    <a href="https://github.com/mareey4/COMP602-Revercial"><strong>Explore the docs »</strong></a>
+    <br />
+    <br />
+  </p>
+</div>
+
+
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#built-with">Built With</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+  </ol>
+</details>
+
+
+
+<!-- ABOUT THE PROJECT -->
+## About The Project
+Revercial is an innovative platform designed to facilitate meaningful and engaging interactions among individuals through events, discussions, and support. By seamlessly integrating features for creating and attending events, personalized profiles, secure messaging, and comprehensive user support, Revercial empowers users to connect, learn, and grow within a vibrant community. Whether it's organizing events, sharing experiences, or seeking assistance, Revercial serves as a versatile hub where users can forge connections, share insights, and access the support they need, all while maintaining privacy and security. In essence, Revercial is a dynamic social platform that fosters connections and enriches the online social experience.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+### Built With
+
+* [![React][React.js]][React-url]
+* [![Firebase][Firebase.js][Firebase-url]
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+<!-- GETTING STARTED -->
+## Getting Started
+
+### Prerequisites
+
+This is an example of how to list things you need to use the software and how to install them.
+* npm
+  ```sh
+  npm install npm@latest -g
+  ```
+
+### Installation
+
+1. Clone the repo
+   ```sh
+   git clone https:https://github.com/mareey4/COMP602-Revercial
+   ```
+2. Install NPM packages
+   ```sh
+   npm install
+   ```
+3. Run the development
+   ```sh
+   npm run dev
+   ```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
+[React-url]: https://reactjs.org/
+[Firebase.js]: https://img.shields.io/badge/Firebase-9.x-orange
+[Firebase-url]: https://firebase.google.com/
