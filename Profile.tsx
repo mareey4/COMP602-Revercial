@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate} from "react-router-dom";
 import { getProfilePic } from "./validation";
 import "./Profile.css";
 import "./NavBar.css";
@@ -8,6 +8,8 @@ import { useLocation } from "react-router-dom";
 function Profile() {
   // State to control the sidebar's open/close status.
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   // State to store the profile picture URL.
   const [profilePicUrl, setProfilePicUrl] = useState(null);
@@ -18,14 +20,7 @@ function Profile() {
 
   // Sanitize email and profile picture name for fetching the profile picture.
   const unsanitizedEmail = user.email.replaceAll(",", ".");
-
-  // Holder for profile picture name for fetching the profile picture
-  let unsanitizedPFPName = "Null";
-
-  // Checks if user has a profile picture file name else uses Null for default
-  if(user.profilePic !== unsanitizedPFPName) {
-    unsanitizedPFPName = user.profilePic.replaceAll(",", ".");
-  }
+  const unsanitizedPFPName = user.profilePic.replaceAll(",", ".");
 
   // useEffect to load the user's profile picture.
   useEffect(() => {
@@ -51,6 +46,10 @@ function Profile() {
     }
   }
 
+  const handleEventsLink = () =>{
+    navigate("/profile", { state: { user: user } });
+  }
+
   return (
     <div className={`profile-container ${sidebarOpen ? "sidebar-open" : ""}`}>
       {/* Sidebar Toggle Button */}
@@ -65,7 +64,7 @@ function Profile() {
         <h2></h2>
         <ul>
           <li>
-            <Link to="/create-events">Create Event</Link>
+            <Link to="/create-events" onClick={handleEventsLink}>Create Event</Link>
           </li>
           <li>
             <a href="#">Settings</a>
