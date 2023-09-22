@@ -1,4 +1,4 @@
-/* Text.css */
+/* Styles for the .container class */
 .container {
   display: flex;
   flex-direction: column;
@@ -11,6 +11,7 @@
   width: 500px;
 }
 
+/* Styles for h1 elements */
 h1 {
   font-size: 14px;
   margin-bottom: 20px;
@@ -18,7 +19,7 @@ h1 {
   text-align: left;
 }
 
-
+/* Styles for label elements */
 label {
   display: block;
   color: white;
@@ -26,6 +27,7 @@ label {
   width: 300px;
 }
 
+/* Styles for input elements of various types */
 input[type="text"],
 input[type="date"],
 input[type="email"],
@@ -34,9 +36,10 @@ input[type="password"] {
   padding: 10px;
   margin-bottom: 10px;
   border: 1px solid #ccc;
-  box-sizing: border-box; /* Ensure the padding and border are included in the width */
+  box-sizing: border-box; 
 }
 
+/* Styles for the .create-button class */
 .create-button {
   background-color: #007bff;
   color: white;
@@ -46,76 +49,19 @@ input[type="password"] {
   cursor: pointer;
 }
 
+/* Styles for the button when hovered */
 .create-button:hover {
   background-color: #0056b3;
 }
 
+/* Styles for paragraph elements */
 p {
   color:white;
   margin-top: 10px;
   font-size: 14px;
 }
 
+/* Styles for links within paragraphs */
 p a {
   color: #007bff;
 }
-
-/* body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
-
-.wrapper h1 {
-  font-size: 36px;
-  text-align: center;
-  color: white;
-}
-
-.wrapper-2 h1{
-  font-size: 15px;
-  width: 270px;
-  font-style: white;
-
-  margin-top: 20px; 
-
-  color: white;
-  text-align: left;
-}
-
-.password-requirements {
-  font-size: 9px;
-  color: white; 
-  margin-top: 1px;
-}
-
-.create-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.create-button-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 10px; 
-}
-
-label {
-  color: white;
-}
-
-.login-link {
-  color: white;
-  font-size: 12px;
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-} */
