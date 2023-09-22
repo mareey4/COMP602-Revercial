@@ -18,7 +18,14 @@ function Profile() {
 
   // Sanitize email and profile picture name for fetching the profile picture.
   const unsanitizedEmail = user.email.replaceAll(",", ".");
-  const unsanitizedPFPName = user.profilePic.replaceAll(",", ".");
+
+  // Holder for profile picture name for fetching the profile picture
+  let unsanitizedPFPName = "Null";
+
+  // Checks if user has a profile picture file name else uses Null for default
+  if(user.profilePic !== unsanitizedPFPName) {
+    unsanitizedPFPName = user.profilePic.replaceAll(",", ".");
+  }
 
   // useEffect to load the user's profile picture.
   useEffect(() => {
