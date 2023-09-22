@@ -1,18 +1,18 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import TextComponent from "./Back End/Text"; // Import your create account component
-import Profile from "./Back End/Profile"; // Import your Profile component
-import LoginComponent from "./Back End/Login"; // Import your Login component
-import CreateEvent from "./Back End/CreateEvents"; // Import your CreateEvent component
-import Privacy from "./Back End/privacy"; // Import your Privacy component
-import SupportComponent from "./Back End/Support"; // Import your Support component
+import TextComponent from "./Back End/Text"; 
+import Profile from "./Back End/Profile";
+import LoginComponent from "./Back End/Login";
+import CreateEvent from "./Back End/CreateEvents"; 
+import Privacy from "./Back End/privacy"; 
+import SupportComponent from "./Back End/Support"; 
 
 const App = () => {
   return (
     <Router>
-      {/* Define the routes for your application */}
+      {/* Define the routes for the app */}
       <Routes>
-        {/* Route for the root path (e.g., your homepage) */}
+        {/* Route for the sign up page */}
         <Route path="/" element={<TextComponent />} />
 
         {/* Route for creating a new account */}
