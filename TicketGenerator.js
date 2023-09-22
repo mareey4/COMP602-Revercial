@@ -2,7 +2,7 @@ import { fbConfig } from './firebase';
 import { getDatabase, ref, set, onValue, remove } from 'firebase/database'
 
 // Function to generate a random ticket ID
-export async function generateTicketID() {
+export async function generateTicketID(pageType) {
         // Define characters and length for the ticket ID
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         const length = 8;
@@ -19,7 +19,7 @@ export async function generateTicketID() {
                 }
 
                 // Checks if generated ticket ID has already been used
-                usedID = await checkExistingTicketID(ticketID);
+                usedID = await checkExistingTicketID(ticketID.pageType);
 
                 if(usedID) {
                     ticketID = '';
@@ -32,32 +32,58 @@ export async function generateTicketID() {
     }
 
 // Function to check if a ticket ID exists in Firebase database
-    export async function checkExistingTicketID(ticketID) {
-        const db = getDatabase(fbConfig);
-            
-          // Define a list of topic options
-            const topicOptions = [
-            'Account Issues',
-            'Privacy and Security',
-            'Content Management',
-            'Technical Problems',
-            'Messaging and Communication',
-            'Feedback and Suggestions',
-            'Report Technical Glitches',
-            'Other'
-        ];
+export async function checkExistingTicketID(ticketID, pageType) {
+    const db = getDatabase(fbConfig);
+    const topicOptions = [
+        'Account Issues',
+        'Privacy and Security',
+        'Content Management',
+        'Technical Problems',
+        'Messaging and Communication',
+        'Feedback and Suggestions',
+        'Report Technical Glitches',
+        'Other'
+    ];
 
-         // Create an array of promises to check ticket ID existence for each topic
+    const eventChoices = [
+        "Gala",
+        "Meeting",
+        "Networking",
+        "Non-Profit Event",
+        "Open House",
+        "Party",
+        "Professional Event",
+        "Reunion",
+        "Sporting Event",
+        "Trip",
+        "Wedding",
+        "Workshop",
+        "Other",
+    ];
+
+    let validID;
+
+    if(pageType === "Support") {
         const promises = topicOptions.map(async (topicOptions) => {
             const refSubject = databaseRef(db, 'Support/' + topicOptions);
             const refTicket = child(refSubject, ticketID);
             const snapshot = await get(refTicket);
             return snapshot.exists();
         });
-
-        // Wait for all promises to resolve and check if at least one topic contains the ticket ID
+        
         const result = await Promise.all(promises);
-        const validID = result.some((exists) => exists);
-    
-        return validID;
+        validID = result.some((exists) => exists);
+    } else if(pageType == "Events") {
+        const promises = eventChoices.map(async (eventChoices) => {
+            const refEvents = databaseRef(db, 'Events/' + eventChoices);
+            const refTicket = child(refEvents, ticketID);
+            const snapshot = await get(refTicket);
+            return snapshot.exists();
+        });
+        
+        const result = await Promise.all(promises);
+        validID = result.some((exists) => exists);
     }
+    
+    return validID;
+}
