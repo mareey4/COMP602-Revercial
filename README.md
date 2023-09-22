@@ -34,7 +34,7 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-Revercial is a groundbreaking platform built to foster real-world connections and meaningful interactions. Our focus is on encouraging users to engage in offline events, lively discussions, and supportive interactions. With a seamless blend of event creation, personalized profiles, secure messaging, and robust user support, Revercial empowers individuals to connect, expand their horizons, and flourish within a vibrant community. Whether it's organizing gatherings, sharing life experiences, or seeking assistance, Revercial acts as a versatile hub where users can build relationships, exchange knowledge, and access support while ensuring privacy and security. In essence, Revercial is a dynamic social platform that enriches the online social landscape by promoting genuine, offline connections and experiences.
+Revercial is a groundbreaking platform built to foster real-world connections and meaningful interactions. Our focus is on encouraging users to engage in offline events, lively discussions, and supportive interactions. With a seamless blend of event creation, personalized profiles, secure messaging, and robust user support, Revercial empowers individuals to connect, expand their horizons, and flourish within a vibrant community. Whether it's organizing gatherings, sharing life experiences, or seeking assistance, Revercial acts as a versatile hub where users can build relationships, exchange knowledge, and access support while ensuring privacy and security.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
