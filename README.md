@@ -42,7 +42,7 @@ Revercial is an innovative platform designed to facilitate meaningful and engagi
 ### Built With
 
 * [![React][React.js]][React-url]
-* [![Firebase][Firebase.js][Firebase-url]
+* [![Firebase][Firebase.js]][Firebase-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
