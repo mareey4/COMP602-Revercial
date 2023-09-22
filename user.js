@@ -1,4 +1,5 @@
 class User {
+  // Constructor method to initialize user properties
   constructor(first_name, surname, username, date_of_birth, email, password, loginStatus, profilePic) {
     this.first_name = first_name;
     this.surname = surname;
@@ -7,6 +8,8 @@ class User {
     this.email = email;
     this.password = password;
     this.loginStatus = loginStatus;
+    
+    // Check if a profile picture is provided
     if(profilePic !== undefined || profilePic !== null) {
       this.profilePic = profilePic;
     } else {
