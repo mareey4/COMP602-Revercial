@@ -63,7 +63,7 @@ This is an example of how to list things you need to use the software and how to
 
 1. Clone the repo
    ```sh
-   git clone https:https://github.com/mareey4/COMP602-Revercial
+   git clone https://github.com/mareey4/COMP602-Revercial
    ```
 2. Install NPM packages
    ```sh
