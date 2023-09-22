@@ -6,13 +6,21 @@ import "./NavBar.css";
 import { useLocation } from "react-router-dom";
 
 function Profile() {
+  // State to control the sidebar's open/close status.
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // State to store the profile picture URL.
   const [profilePicUrl, setProfilePicUrl] = useState(null);
+
+  // Get the user data from the location state.
   const location = useLocation();
   const user = location.state?.user;
+
+  // Sanitize email and profile picture name for fetching the profile picture.
   const unsanitizedEmail = user.email.replaceAll(",", ".");
   const unsanitizedPFPName = user.profilePic.replaceAll(",", ".");
 
+  // useEffect to load the user's profile picture.
   useEffect(() => {
     async function loadProfilePic() {
       const url = await getProfilePic(unsanitizedEmail, unsanitizedPFPName);
@@ -24,13 +32,15 @@ function Profile() {
     loadProfilePic();
   }, [unsanitizedEmail, unsanitizedPFPName]);
 
+  // Function to toggle the sidebar open/close status.
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  const handleLogout = () =>{
+  // Function to handle user logout (not fully implemented).
+  const handleLogout = () => {
     if (user) {
-      user.loginStatus = false;
+      user.loginStatus = false; // Update the login status (Note: This might need further implementation).
     }
   }
 
@@ -60,7 +70,7 @@ function Profile() {
             <Link to="/Support">Support Page</Link>
           </li>
           <li>
-          <Link to="/Login" onClick={handleLogout}>Log out</Link>{" "}
+            <Link to="/Login" onClick={handleLogout}>Log out</Link>{" "}
           </li>
         </ul>
       </div>
@@ -68,16 +78,16 @@ function Profile() {
       {/* Main Content */}
       <div className="main-content">
         {profilePicUrl && (
-        <div className="profile-info">
-      <img src={profilePicUrl} alt="Profile" className="profile-pic" />
-      <div className="user-details">
-        <p className="user-name">{user.first_name}</p>
-        <p className="user-username">@{user.username}</p>
+          <div className="profile-info">
+            <img src={profilePicUrl} alt="Profile" className="profile-pic" />
+            <div className="user-details">
+              <p className="user-name">{user.first_name}</p>
+              <p className="user-username">@{user.username}</p>
+            </div>
+          </div>
+        )}
+        <h1>Profile</h1>
       </div>
-    </div>
-  )}
-  <h1>Profile</h1>
-</div>
     </div>
   );
 }
