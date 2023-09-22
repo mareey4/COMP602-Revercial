@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate} from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { getProfilePic } from "./validation";
-import "./Profile.css";
-import "./NavBar.css";
-import { useLocation } from "react-router-dom";
+import "../Front End/Profile.css";
+import "../Front End/NavBar.css";
 
 function Profile() {
   // State to control the sidebar's open/close status.
@@ -19,15 +18,17 @@ function Profile() {
   const user = location.state?.user;
 
   // Sanitize email and profile picture name for fetching the profile picture.
-  const unsanitizedEmail = user.email.replaceAll(",", ".");
-  const unsanitizedPFPName = user.profilePic.replaceAll(",", ".");
+  const unsanitizedEmail = user?.email?.replaceAll(",", ".");
+  const unsanitizedPFPName = user?.profilePic?.replaceAll(",", ".");
 
   // useEffect to load the user's profile picture.
   useEffect(() => {
     async function loadProfilePic() {
-      const url = await getProfilePic(unsanitizedEmail, unsanitizedPFPName);
-      if (url) {
-        setProfilePicUrl(url);
+      if (unsanitizedEmail && unsanitizedPFPName) {
+        const url = await getProfilePic(unsanitizedEmail, unsanitizedPFPName);
+        if (url) {
+          setProfilePicUrl(url);
+        }
       }
     }
 
@@ -44,11 +45,11 @@ function Profile() {
     if (user) {
       user.loginStatus = false; // Update the login status (Note: This might need further implementation).
     }
-  }
+  };
 
-  const handleEventsLink = () =>{
+  const handleEventsLink = () => {
     navigate("/profile", { state: { user: user } });
-  }
+  };
 
   return (
     <div className={`profile-container ${sidebarOpen ? "sidebar-open" : ""}`}>
@@ -64,7 +65,9 @@ function Profile() {
         <h2></h2>
         <ul>
           <li>
-            <Link to="/create-events" onClick={handleEventsLink}>Create Event</Link>
+            <Link to="/create-events" onClick={handleEventsLink}>
+              Create Event
+            </Link>
           </li>
           <li>
             <a href="#">Settings</a>
@@ -76,7 +79,9 @@ function Profile() {
             <Link to="/Support">Support Page</Link>
           </li>
           <li>
-            <Link to="/Login" onClick={handleLogout}>Log out</Link>{" "}
+            <Link to="/Login" onClick={handleLogout}>
+              Log out
+            </Link>{" "}
           </li>
         </ul>
       </div>

@@ -1,47 +1,55 @@
-/* Sidebar styles */
   .sidebar {
     width: 250px;
     background-color: #85C25C;
     color: #fff;
     padding: 20px;
     position: fixed;
-    left: -250px; /* Initially, push it to the left side */
+    left: -250px; 
     top: 0;
     height: 100%;
     overflow-y: auto;
-    transition: left 0.3s ease; /* Transition left property */
+    transition: left 0.3s ease; 
+    z-index: 3;
   }
-
-/* Open sidebar when the .profile-container has the .sidebar-open class */
+  
+  .body.sidebar-open .sidebar
+  {
+    left: 0;
+     z-index: 2;
+  }
+  
   .profile-container.sidebar-open .sidebar {
     left: 0;
+    z-index: 2;
   }
 
-/* Styles for heading inside the sidebar */
+  .wrapper.sidebar-open .sidebar
+  {
+    left: 0;     
+    z-index: 2;
+  }
+  
+  
   .sidebar h2 {
     font-size: 24px;
     margin-bottom: 20px;
   }
-
-/* Styles for unordered lists inside the sidebar */
+  
   .sidebar ul {
     list-style-type: none;
     padding: 0;
   }
-
-/* Styles for list items inside the sidebar */
+  
   .sidebar li {
     margin-bottom: 10px;
   }
-
-/* Styles for links inside the sidebar */
+  
   .sidebar a {
     text-decoration: none;
     color: #fff;
     font-size: 18px;
   }
   
-  /* Sidebar Toggle Button styles */
   .sidebar-toggle {
     cursor: pointer;
     padding: 10px;
@@ -49,10 +57,9 @@
     left: 0;
     top: 0;
     background-color: #85C25C;
-    z-index: 1;
+    z-index: 3;
   }
-
-/* Styles for the toggle button lines */
+  
   .toggle-lines {
     width: 20px;
     height: 20px;
@@ -66,18 +73,5 @@
       background-color: #fff;
       transition: transform 0.3s ease;
     }
-  }
-
-/* Animation for toggle button lines when sidebar is open */
-  .profile-container.sidebar-open .toggle-lines span:nth-child(1) {
-    transform: rotate(45deg) translate(3px, 3px);
-  }
-  
-  .profile-container.sidebar-open .toggle-lines span:nth-child(2) {
-    opacity: 0;
-  }
-  
-  .profile-container.sidebar-open .toggle-lines span:nth-child(3) {
-    transform: rotate(-45deg) translate(3px, -3px);
   }
   

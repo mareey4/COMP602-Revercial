@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../Front End/NavBar.css";
 import "../Front End/CreateEvents.css";
 import { getDatabase, ref, set } from "firebase/database";
@@ -13,6 +13,7 @@ import {
 } from "./validation";
 
 function CreateEvents() {
+  const navigate = useNavigate();
   // State for sidebar toggle
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -34,7 +35,12 @@ function CreateEvents() {
   const [continueButtonDisabled, setContinueButtonDisabled] = useState(true); // State for disabling the "Continue" button
   const [addressValid, setAddressValid] = useState(true);
 
-  // Array of event choices
+  const handleProfileLink = async () => {
+    const location = useLocation();
+    const user = location.state?.user;
+    navigate("/profile", { state: { user: user } });
+  };
+
   const eventChoices = [
     "Gala",
     "Meeting",
@@ -62,6 +68,7 @@ function CreateEvents() {
   const handleCreateEvent = async () => {
     // Check for incomplete event details
     console.log("Handle Create Event function called!");
+
     if (
       !eventDetails.date ||
       !eventDetails.location ||
@@ -87,7 +94,7 @@ function CreateEvents() {
 
     try {
       // Generate a unique ticket ID
-      const ticketID = await generateTicketID();
+      const ticketID = await generateTicketID("Events");
 
       const eventDetailsWithTicketID = {
         ...eventDetails,
@@ -95,7 +102,7 @@ function CreateEvents() {
       };
 
       // Access Firebase database
-      const db = getDatabase();
+      const db = getDatabase(fbConfig);
       const eventTypePath = selectedEventType.replace(/ /g, "_");
       const eventPath = `Events/${eventTypePath}/${ticketID}`;
       const eventRef = ref(db, eventPath);
@@ -140,25 +147,30 @@ function CreateEvents() {
   return (
     // Navigation bar and JSX component with steps to create the event
     <div className={`body ${sidebarOpen ? "sidebar-open" : ""}`}>
+      {/* Sidebar Toggle Button */}
       <div className="sidebar-toggle" onClick={toggleSidebar}>
         <div className={`toggle-lines ${sidebarOpen ? "open" : ""}`}>
           &#9776;
         </div>
       </div>
+
+      {/* Sidebar */}
       <div className="sidebar">
         <h2></h2>
         <ul>
           <li>
-            <Link to="/Profile">Profile</Link>
+            <Link to="/Profile" onClick={handleProfileLink}>
+              Profile
+            </Link>
           </li>
           <li>
-            <Link to="/create-events">Create Event</Link>{" "}
+            <Link to="/create-events">Create Event</Link>
           </li>
           <li>
-            <Link to="/privacy">Settings</Link>
+            <Link to="/Privacy">Privacy Settings</Link>
           </li>
           <li>
-            <Link to="/Support">Support</Link>
+            <Link to="/Support">Support Page</Link>
           </li>
           <li>
             <Link to="/Login">Log out</Link>{" "}
