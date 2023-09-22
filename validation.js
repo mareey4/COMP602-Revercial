@@ -15,7 +15,7 @@ export async function saveUserData(newUser) {
         Username: newUser.username,
         Password: newUser.password,
         Login_Status: newUser.loginStatus,
-        Profile_Pic: newUser.profilePic.name
+        Profile_Pic: newUser.profilePic
     });
 }
 
@@ -38,32 +38,6 @@ export async function saveSupportAttachments(subject, ticketID, file) {
     await uploadBytes(refSupport, file);
 }
 
-export async function checkExistingTicketID(ticketID) {
-    const db = getDatabase(fbConfig);
-    const topicOptions = [
-        'Account Issues',
-        'Privacy and Security',
-        'Content Management',
-        'Technical Problems',
-        'Messaging and Communication',
-        'Feedback and Suggestions',
-        'Report Technical Glitches',
-        'Other'
-    ];
-
-    const promises = topicOptions.map(async (topicOptions) => {
-        const refSubject = databaseRef(db, 'Support/' + topicOptions);
-        const refTicket = child(refSubject, ticketID);
-        const snapshot = await get(refTicket);
-        return snapshot.exists();
-    });
-
-    const result = await Promise.all(promises);
-    const validID = result.some((exists) => exists);
-
-    return validID;
-}
-
 export async function setProfilePic(email, file) {
     const storage = getStorage(fbConfig);
     const refUser = storageRef(storage, 'Users/' + email + '/' + 'ProfilePic/' + file.name);
@@ -73,8 +47,14 @@ export async function setProfilePic(email, file) {
 
 export async function getProfilePic(email, filename) {
     const storage = getStorage(fbConfig);
-    const refUser = storageRef(storage, 'Users/' + email + '/ProfilePic/' + filename);
+    let refUser;
 
+    if(filename === "Null") {
+        refUser = storageRef(storage, 'Defaults/Default-PFP.jpg');
+    } else {
+        refUser = storageRef(storage, 'Users/' + email + '/ProfilePic/' + filename);
+    }
+    
     return new Promise(async (resolve) => {
         try {
             const downloadURL = await getDownloadURL(refUser);
@@ -355,7 +335,6 @@ export async function validatePassword(password) {
     const uppercase = /[A-Z]/;
     const lowercase = /[a-z]/;
     const digit = /[0-9]/;
-    const charsAndSpaces = /[^A-Za-z0-9]/;
 
     return new Promise((resolve) => {
         if(password.length >= 8) {
@@ -387,19 +366,27 @@ export function getCurrentDate() {
     }
   
     return `${year}-${month}-${day}`;
-  }
+}
 
 export function isValidDate(dateString) {
     const selectedDate = new Date(dateString);
     const currentDate = new Date();
     return selectedDate >= currentDate;
-  }
+}
   
-  export function validateAddress(address) {
+export function validateAddress(address) {
     const addressRegex = /^[a-zA-Z0-9\s,-]+$/;
     return addressRegex.test(address);
-  }
+}
   
-  export function validateDescription(description) {
+export function validateDescription(description) {
     return description.length <= 500;
-  }
+}
+
+export function isFutureDate(dateString) {
+    const selectedDate = new Date(dateString);
+    const currentDate = new Date();
+    console.log("Selected Date:", selectedDate);
+    console.log("Current Date:", currentDate);
+    return selectedDate >= currentDate;
+}
