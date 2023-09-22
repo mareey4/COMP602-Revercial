@@ -1,0 +1,242 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.mainContainer {
+    width: 75vw;
+    height: 50vw;
+    background-color: white;
+    color: black;
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+.emailContainer {
+    display: flex;
+    align-items: top;
+    margin-bottom: 15px;
+}
+
+.emailLabel {
+    color: black;
+    margin-right: 30px;
+    line-height: 30px;
+}
+
+.emailInput {
+    background-color: white;
+    color: black;
+    font-size: 15px;
+    border-radius: 4px;
+}
+
+.dropdownContainer {
+    display: flex;
+    align-items: top;
+    margin-bottom: 15px;
+}
+
+.dropdownLabel {
+    color: black;
+    margin-right: 15px;
+    line-height: 36px;
+}
+
+.dropdown {
+    width: 300px;
+    background-color: white;
+    text-align: center;
+    display: inline-block;
+    position: relative;
+    user-select: none;
+    border-radius: 4px;
+}
+
+.dropdownToggle {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.dropdownMenu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-top: none;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: none;
+    z-index: 1;
+}
+
+.dropdownMenu li {
+    padding: 5px 12px;
+    cursor: pointer;
+}
+
+.dropdown.open .dropdownMenu {
+    display: block;
+}
+
+.descriptionContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: top;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.descriptionLabel {
+    color: black;
+    margin-right: 10px;
+    line-height: 36px;
+}
+
+.descriptionTextArea {
+    width: 65%;
+    height: 270px;
+    background-color: white;
+    color: black;
+    padding: 5px;
+    border-radius: 4px;
+    resize: vertical;
+    font-style: normal;
+}
+
+.descriptionTextArea::placeholder {
+    color: #888;
+    font-style: italic;
+}
+
+.descriptionTextArea:focus {
+    color: black;
+    font-style: normal;
+}
+
+.charCount {
+    color: #888;
+    font-style: italic;
+    font-size: 13px;
+    text-align: end;
+    margin-top: 5px;
+    position: absolute;
+    top: 100%;
+    left: 55%;
+}
+
+.attachmentsAndDeleteContainer {
+    display: flex;
+    align-items: flex-start;
+}
+
+.attachmentsContainer {
+    width: 400px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 15px;
+}
+
+.attachmentsLabel {
+    color: black;
+    margin-right: 15px;
+    line-height: 36px;
+    display: flex;
+    align-items: center;
+}
+
+.addFileButton {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 5px 10px;
+    margin-left: 10px;
+}
+
+.addFileButton:hover {
+    background-color: #2980b9;
+}
+
+.selectedFilesList {
+    list-style: none;
+    padding: 0;
+    margin: 5px 0 0 0;
+}
+
+.selectedFilesList li {
+    color: black;
+    margin-top: 9px;
+}
+
+.deleteButtonsContainer {
+    display: flex;
+    flex-direction: column;
+    margin-top: 50px;
+}
+
+.deleteButtonsList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.deleteButtonContainer {
+    margin-top: 5px;
+}
+
+.deleteFileButton {
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.deleteFileButton:hover {
+    background-color: #ff4444;
+}
+
+.fileContainer {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.fileList {
+    flex: 1;
+}
+
+.fileInfo {
+    display: flex;
+    align-items: center;
+}
+
+.fileName {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    margin-right: 10px;
+}
+
+.deleteButtons {
+    flex-shrink: 0;
+}
+
+.submitButtonContainer {
+    display: flex;
+    margin-top: 50px;
+}

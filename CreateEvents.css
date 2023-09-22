@@ -1,0 +1,75 @@
+/* Styles for the .wrapper class */
+.wrapper {
+  text-align: center;
+  width: 600px;
+}
+
+/* Styles for h1 elements inside .wrapper */
+.wrapper h1 {
+  font-size: 36px;
+  text-align: center;
+  color: white;
+  margin-bottom: 20px;
+}
+
+/* Styles for .wrapper-2 class */
+.wrapper-2 {
+  width: 370px;
+  text-align: center;
+  margin-top: 20px; 
+}
+
+/* Styles for h2 elements inside .wrapper-2 */
+.wrapper-2 h2 {
+  font-size: 15px;
+  color: white;
+  text-align: center;
+}
+
+/* Styles for .create-button class */
+.create-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 20px 0;
+  margin-right: 50px; 
+}
+
+/* Styles for .create-button-container class */
+.create-button-container {
+  text-align: center; 
+  display: flex;
+  justify-content: space-between;  margin-top: 50px;
+}
+
+/* Styles for input[type="date"] */
+input[type="date"] {
+  width: 92%;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+/* Styles for input[type="text"] */
+input[type="text"] {
+  width: 92%; 
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+/* Styles for textarea */
+textarea {
+  width: 90%; 
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+/* Styles for select elements */
+select {
+  width: 92%;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ccc; 
+}

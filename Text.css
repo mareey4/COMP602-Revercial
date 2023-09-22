@@ -1,39 +1,45 @@
-body {
+/* Styles for the .container class */
+.container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  min-height: 100vh;
-}
-
-.wrapper {
-  width: 420px;
-  text-align: center; 
-}
-
-.wrapper h1 {
-  font-size: 36px;
-  text-align: center;
-  color: white;
-}
-
-.wrapper-2 {
-  width: 270px;
+  justify-content: center;
+  height: 100vh;
   text-align: left;
-  margin-top: 20px; 
+  font-size: 18px;
+  margin: 0 auto;
+  width: 500px;
 }
 
-.wrapper-2 h2 {
-  font-size: 15px;
+/* Styles for h1 elements */
+h1 {
+  font-size: 14px;
+  margin-bottom: 20px;
   color: white;
   text-align: left;
 }
 
-.password-requirements {
-  font-size: 8px;
-  color: white; 
-  margin-top: 1px;
+/* Styles for label elements */
+label {
+  display: block;
+  color: white;
+  margin-bottom: 10px;
+  width: 300px;
 }
 
+/* Styles for input elements of various types */
+input[type="text"],
+input[type="date"],
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  box-sizing: border-box; 
+}
+
+/* Styles for the .create-button class */
 .create-button {
   background-color: #007bff;
   color: white;
@@ -43,18 +49,19 @@ body {
   cursor: pointer;
 }
 
-.create-button-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 10px; 
+/* Styles for the button when hovered */
+.create-button:hover {
+  background-color: #0056b3;
 }
 
-label {
-  color: white;
+/* Styles for paragraph elements */
+p {
+  color:white;
+  margin-top: 10px;
+  font-size: 14px;
 }
 
-.login-link {
-  color: white;
-  font-size: 12px;
-  margin-bottom: 10px;
+/* Styles for links within paragraphs */
+p a {
+  color: #007bff;
 }
