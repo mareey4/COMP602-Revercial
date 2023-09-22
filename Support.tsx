@@ -1,12 +1,21 @@
-import './Support.css';
+//Imports
+import '../Components/Support.css';
 import React, { useState, useRef } from 'react';
-import { saveSupportInfo, saveSupportAttachments, checkExistingTicketID, validateEmail, validateDescription } from "./validation";
+import { 
+    saveSupportInfo,
+    saveSupportAttachments,
+    validateEmail,
+    validateDescription 
+} from "../Back End/validation";
+import { generateTicketID } from "../Back End/TicketGenerator";
 import { useNavigate } from "react-router-dom";
-import Query from "./query";
+import Query from "../Components/query";
 
+// SupportComponent for App
 function Support() {
     const navigate = useNavigate();
 
+    //Array of subject/topic options
     const topicOptions = [
         'Account Issues',
         'Privacy and Security',
@@ -27,42 +36,50 @@ function Support() {
     const [selectedFileNames, setFileNames] = useState<string[]>([]);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+    // Sets the selected subject/topic
     const handleItemClick = (item: string) => {
         setSelectedItem(item);
         setIsDropdownOpen(false);
     };
 
+    // Sets focus to true if text area has been clicked
     const handleTextAreaFocus = () => {
         setIsTextAreaFocused(true);
         setIsPlaceholderVisible(false);
     };
 
+    // Sets focus to false if the clicked off text area
     const handleTextAreaBlur = () => {
         setIsTextAreaFocused(false);
         setIsPlaceholderVisible(true);
     };
 
+    // Handles visual changes based on focus state of text area
     const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const text = e.target.value;
         setDescription(text);
 
+        // Handles character count change for display within the given range
         if (text.length >= 0 && text.length <= 500) {
             setCharCount(text.length);
         }
     };
 
+    // Sets the selected file as reference
     const handleAddFileClick = () => {
         if (fileInputRef.current) {
             fileInputRef.current.click();
         }
     };
 
+    // Handles validity of selected file, if image file, and adds to an array
     const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
 
         if(files) {
             const fileArray = Array.from(files);
 
+            // Checks for duplicate files preventing duplicates from being added to the array
             const duplicateFiles = fileArray.filter(file => {
                 return selectedFiles.some(existingFile => existingFile.name === file.name);
             });
@@ -70,14 +87,15 @@ function Support() {
             if(duplicateFiles.length > 0) {
                 alert("That file has already been added!");
             } else {
+                // Checks file type to make sure the selected file is of type image
                 const imageFiles = fileArray.filter(file => {
                     return file.type.startsWith("image/");
                 });
     
                 if(imageFiles.length > 0) {
-                    setSelectedFiles([...selectedFiles, ...imageFiles]);
+                    setSelectedFiles([...selectedFiles, ...imageFiles]); // saves file to a File array
                     const names = imageFiles.map((file) => file.name);
-                    setFileNames([...selectedFileNames, ...names]);
+                    setFileNames([...selectedFileNames, ...names]); // Saves file name to a String array
                 } else {
                     alert("Please select valid image files.");
                 }
@@ -85,6 +103,7 @@ function Support() {
         }
     };
 
+    // Handles removal of files from the array
     const handleRemoveFile = (indexToRemove: number) => {
         const updatedSelectedFiles = [...selectedFiles];
         updatedSelectedFiles.splice(indexToRemove, 1);
@@ -95,36 +114,13 @@ function Support() {
         setSelectedFiles(updatedSelectedFiles);
         setFileNames(updatedFileNames);
 
+        // Resets selected file reference to enable the user to select previous file if needed
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
     };
 
-    async function generateTicketID() {
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        const length = 8;
-        let ticketID = '';
-        let usedID = true;
-
-        return new Promise(async (resolve) => {
-            while(usedID) {
-                for(let i = 0; i < length; i++) {
-                    const randIndex = Math.floor(Math.random() * characters.length);
-                    ticketID += characters.charAt(randIndex);
-                }
-
-                usedID = await checkExistingTicketID(ticketID);
-
-                if(usedID) {
-                    ticketID = '';
-                }
-            }
-
-            resolve(ticketID);
-            return;
-        });
-    }
-
+    // Handles inputs when user clicks submit, calls functions to save inputs to database
     const handleSubmitClick = async () => {
         const email = document.querySelector('input[name="email"]') as HTMLInputElement;
         let validEmail = await validateEmail(email.value);
@@ -132,6 +128,7 @@ function Support() {
         let validDescription = await validateDescription(description);
         let errorMsg = "Error:\n";
 
+        // Checks validity of inputs
         if(!validEmail) {
             errorMsg += "  - Invalid email.\n";
         }
@@ -146,8 +143,9 @@ function Support() {
             errorMsg += "  - Please describe your query.\n";
         }
 
+        // If inputs are valid saves inputs to the database
         if(validEmail && validSubject && validDescription) {
-            const ticketID = await generateTicketID();
+            const ticketID = await generateTicketID(); // Generates a unique randomized ticket ID
             const newQuery = new Query(
                 ticketID,
                 email.value,
@@ -156,15 +154,16 @@ function Support() {
                 selectedFileNames
             );
 
+            // If file attachments have been added, saves to firebase storage
             if(selectedFiles.length > 0) {
                 for(let i = 0; i < selectedFiles.length; i++) {
                     await saveSupportAttachments(selectedItem, ticketID, selectedFiles[i]);
                 }
             }
             
-            await saveSupportInfo(newQuery);
+            await saveSupportInfo(newQuery); // Saves info to database
             alert("Your query has been sent, we will get back to you soon.");
-            navigate("/create-account");
+            navigate("/create-account"); // Navigates user to Create Account page
         } else {
             alert(errorMsg);
             return;
