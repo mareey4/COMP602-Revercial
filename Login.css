@@ -1,9 +1,11 @@
+/* Apply a basic reset to remove default margins and paddings on all elements */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* Center the content vertically and horizontally on the page */
 body {
     display: flex;
     justify-content: center;
@@ -11,15 +13,18 @@ body {
     min-height: 100vh;
 }
 
+/* Define a container for the login form with a fixed width */
 .wrapper {
     width: 420px;
 }
 
+/* Style the heading inside the container */
 .wrapper h1 {
     font-size: 36px; 
     text-align: center;
 }
 
+/* Style the input boxes within the form */
 .wrapper .input-box {
     position: relative;
     width: 100%;
@@ -39,10 +44,12 @@ body {
     font-size: 16px;
 }
 
+/* Style the placeholder text in the input fields */
 .input-box input::placeholder {
     color: white;
 }
 
+/* Style the login button */
 .wrapper .btn {
     width: 35%;
     height: 35px;
@@ -56,7 +63,16 @@ body {
     font-weight: 600;
 }
 
+/* Style the "Forgot Username or Forgot Password" links */
 .wrapper .forgot-links {
-    font-size:14.5px;
-    margin-top: 28px;
+    font-size: 14.5px;
+    margin-top: 20px;
+}
+
+/* Style list items inside the container */
+.wrapper li {
+    margin-top: 20px; /* Add margin between list items */
+    list-style: none; /* Remove default list styles */
+    text-align: left;
+    width: 100%; /* Make list items take up full width */
 }
