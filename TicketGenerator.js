@@ -7,12 +7,23 @@ export async function generateTicketID() {
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         const length = 8;
         let ticketID = '';
+        let usedID = true;
 
         // Generate a random ticket ID
-        return new Promise((resolve) => {
-            for(let i = 0; i < length; i++) {
-                const randIndex = Math.floor(Math.random() * characters.length);
-                ticketID += characters.charAt(randIndex);
+        return new Promise(async (resolve) => {
+            // Continuously loop until a unique ticket ID is generated
+            while(usedID) {
+                for(let i = 0; i < length; i++) {
+                    const randIndex = Math.floor(Math.random() * characters.length);
+                    ticketID += characters.charAt(randIndex);
+                }
+
+                // Checks if generated ticket ID has already been used
+                usedID = await checkExistingTicketID(ticketID);
+
+                if(usedID) {
+                    ticketID = '';
+                }
             }
 
             resolve(ticketID); // Resolve the promise with the generated ticket ID
