@@ -96,6 +96,9 @@ function Text() {
     ) {
       let resultEmail = await getUserViaEmail(email.value);
       let resultUsername = await getUserViaUsername(username.value);
+      
+      // Placeholder for default profile picture
+      let defaultPFP = "Null";
 
       if (resultEmail === undefined) {
         if (resultUsername === undefined) {
@@ -108,13 +111,13 @@ function Text() {
             email.value,
             password.value,
             false,
-            undefined
+            defaultPFP
           );
 
           // Display success message, save user data, and navigate to the profile page
           alert("Successfully Created");
           saveUserData(newUser);
-          navigate("/profile");
+          navigate("/profile", { state: { user: newUser } });
         } else {
           alert("Existing account with the given username already exists.");
         }
