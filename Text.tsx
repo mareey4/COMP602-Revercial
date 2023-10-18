@@ -1,4 +1,4 @@
-import "../Front End/Text.css";
+import "./Text.css";
 import {
   getUserViaEmail,
   saveUserData,
@@ -9,7 +9,7 @@ import {
   validateEmail,
   getUserViaUsername,
 } from "./validation";
-import React, { useState } from "react";
+import { useState } from "react";
 import User from "./user";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -94,11 +94,12 @@ function Text() {
       isPasswordValid &&
       isEmailValid
     ) {
-      let resultEmail = await getUserViaEmail(email.value);
-      let resultUsername = await getUserViaUsername(username.value);
+      const resultEmail = await getUserViaEmail(email.value);
+      const resultUsername = await getUserViaUsername(username.value);
       
       // Placeholder for default profile picture
-      let defaultPFP = "Null";
+      const defaultPFP = "Null";
+      const defaultBio = "";
 
       if (resultEmail === undefined) {
         if (resultUsername === undefined) {
@@ -111,7 +112,8 @@ function Text() {
             email.value,
             password.value,
             false,
-            defaultPFP
+            defaultPFP,
+            defaultBio
           );
 
           // Display success message, save user data, and navigate to the profile page
