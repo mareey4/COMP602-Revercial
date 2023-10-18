@@ -1,4 +1,4 @@
-import { getDatabase, ref as databaseRef, get, set, onValue, remove, child } from 'firebase/database';
+import { getDatabase, ref, ref as databaseRef, get, set, onValue, remove, child, update } from 'firebase/database';
 import { getStorage, uploadBytes, getDownloadURL, ref as storageRef } from 'firebase/storage';
 import { fbConfig } from './firebase';
 import User from './user';
@@ -15,7 +15,8 @@ export async function saveUserData(newUser) {
         Username: newUser.username,
         Password: newUser.password,
         Login_Status: newUser.loginStatus,
-        Profile_Pic: newUser.profilePic
+        Profile_Pic: newUser.profilePic,
+        Bio: newUser.bio
     });
 }
 
@@ -36,6 +37,32 @@ export async function saveSupportAttachments(subject, ticketID, file) {
     const refSupport = storageRef(storage, 'Support/' + subject + '/' + ticketID + '/' + file.name);
 
     await uploadBytes(refSupport, file);
+}
+
+export async function checkExistingTicketID(ticketID) {
+    const db = getDatabase(fbConfig);
+    const topicOptions = [
+        'Account Issues',
+        'Privacy and Security',
+        'Content Management',
+        'Technical Problems',
+        'Messaging and Communication',
+        'Feedback and Suggestions',
+        'Report Technical Glitches',
+        'Other'
+    ];
+
+    const promises = topicOptions.map(async (topicOptions) => {
+        const refSubject = databaseRef(db, 'Support/' + topicOptions);
+        const refTicket = child(refSubject, ticketID);
+        const snapshot = await get(refTicket);
+        return snapshot.exists();
+    });
+
+    const result = await Promise.all(promises);
+    const validID = result.some((exists) => exists);
+
+    return validID;
 }
 
 export async function setProfilePic(email, file) {
@@ -89,7 +116,8 @@ export async function getUserViaEmail(userEmail) {
                         email,
                         userData.Password,
                         userData.Login_Status,
-                        userData.Profile_Pic
+                        userData.Profile_Pic,
+                        userData.Bio
                     );
 
                     resolve(user);
@@ -123,7 +151,8 @@ export async function getUserViaUsername(username) {
                         email,
                         userData.Password,
                         userData.Login_Status,
-                        userData.Profile_Pic
+                        userData.Profile_Pic,
+                        userData.Bio
                     );
 
                     resolve(user);
@@ -136,6 +165,7 @@ export async function getUserViaUsername(username) {
         });
     });
 }
+
 
 export async function deleteAccount(user) {
     const db = getDatabase(fbConfig);
@@ -193,7 +223,10 @@ export async function getAllUsers() {
                 userData.Username,
                 userData.DOB,
                 email,
-                userData.Password
+                userData.Password,
+                userData.Login_Status,
+                userData.Profile_Pic,
+                userData.Bio
             );
 
             users.push(user);
@@ -335,6 +368,7 @@ export async function validatePassword(password) {
     const uppercase = /[A-Z]/;
     const lowercase = /[a-z]/;
     const digit = /[0-9]/;
+    const charsAndSpaces = /[^A-Za-z0-9]/;
 
     return new Promise((resolve) => {
         if(password.length >= 8) {
@@ -366,27 +400,35 @@ export function getCurrentDate() {
     }
   
     return `${year}-${month}-${day}`;
-}
+  }
 
 export function isValidDate(dateString) {
     const selectedDate = new Date(dateString);
     const currentDate = new Date();
     return selectedDate >= currentDate;
-}
+  }
   
-export function validateAddress(address) {
+  export function validateAddress(address) {
     const addressRegex = /^[a-zA-Z0-9\s,-]+$/;
     return addressRegex.test(address);
-}
+  }
   
-export function validateDescription(description) {
-    return description.length <= 500;
-}
+  export function validateDescription(description) {
+    return description.length <= 100;
+  }
 
-export function isFutureDate(dateString) {
-    const selectedDate = new Date(dateString);
-    const currentDate = new Date();
-    console.log("Selected Date:", selectedDate);
-    console.log("Current Date:", currentDate);
-    return selectedDate >= currentDate;
-}
+  export async function saveUserBio(email, bio) {
+    const db = getDatabase(fbConfig);
+    const sanitizedEmail = email.replaceAll(".",",");
+    const userRef = ref(db, 'Users/' + sanitizedEmail); // Replace 'Users' with your actual user data path
+  
+    try {
+      await update(userRef, {
+        Bio: bio
+      });
+      console.log('Bio saved successfully');
+    } catch (error) {
+      console.error('Error saving bio:', error);
+      throw error; // You can handle or propagate the error as needed
+    }
+  }
