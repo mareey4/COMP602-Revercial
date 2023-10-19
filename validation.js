@@ -65,26 +65,58 @@ export async function checkExistingTicketID(ticketID) {
     return validID;
 }
 
-export async function setProfilePic(email, file) {
+export async function setProfilePic(user, file) {
     const storage = getStorage(fbConfig);
-    const refUser = storageRef(storage, 'Users/' + email + '/' + 'ProfilePic/' + file.name);
+    let sanitizedEmail;
+    if(user.email.includes(".")) {
+        sanitizedEmail = user.email.replaceAll(".",",");
+    } else {
+        sanitizedEmail = user.email;
+    }
+    const refUser = storageRef(storage, 'Users/' + sanitizedEmail + '/' + 'ProfilePic/' + file.name);
 
     await uploadBytes(refUser, file);
+
+    let sanitizedPFP;
+
+    if(file.name.includes(".")) {
+        sanitizedPFP = file.name.replaceAll(".",",");
+    } else {
+        sanitizedPFP = file.name;
+    }
+
+    user.profilePic = sanitizedPFP;
+
+    await saveUserData(user);
 }
 
 export async function getProfilePic(email, filename) {
     const storage = getStorage(fbConfig);
     let refUser;
+    let sanitizedEmail;
+    let sanitizedPFPName;
+
+    if(email.includes(".")) {
+        sanitizedEmail =  email.replaceAll(".",",");
+    } else {
+        sanitizedEmail = email;
+    }
+
+    if(filename.includes(",")) {
+        sanitizedPFPName = filename.replaceAll(",",".");
+    } else {
+        sanitizedPFPName = filename;
+    }
 
     if(filename === "Null") {
         refUser = storageRef(storage, 'Defaults/Default-PFP.jpg');
     } else {
-        refUser = storageRef(storage, 'Users/' + email + '/ProfilePic/' + filename);
+        refUser = storageRef(storage, 'Users/' + sanitizedEmail + '/ProfilePic/' + sanitizedPFPName);
     }
     
-    return new Promise(async (resolve) => {
+    return new Promise((resolve) => {
         try {
-            const downloadURL = await getDownloadURL(refUser);
+            const downloadURL = getDownloadURL(refUser);
             resolve(downloadURL);
             return;
         } catch {
