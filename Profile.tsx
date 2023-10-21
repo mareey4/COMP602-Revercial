@@ -1,115 +1,22 @@
-/* import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { getProfilePic } from "./validation";
-import "../Front End/Profile.css";
-import "../Front End/NavBar.css";
-
-function Profile() {
-  // State to control the sidebar's open/close status.
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const navigate = useNavigate();
-
-  // State to store the profile picture URL.
-  const [profilePicUrl, setProfilePicUrl] = useState(null);
-
-  // Get the user data from the location state.
-  const location = useLocation();
-  const user = location.state?.user;
-
-  // Sanitize email and profile picture name for fetching the profile picture.
-  const unsanitizedEmail = user?.email?.replaceAll(",", ".");
-  const unsanitizedPFPName = user?.profilePic?.replaceAll(",", ".");
-
-  // useEffect to load the user's profile picture.
-  useEffect(() => {
-    async function loadProfilePic() {
-      if (unsanitizedEmail && unsanitizedPFPName) {
-        const url = await getProfilePic(unsanitizedEmail, unsanitizedPFPName);
-        if (url) {
-          setProfilePicUrl(url);
-        }
-      }
-    }
-
-    loadProfilePic();
-  }, [unsanitizedEmail, unsanitizedPFPName]);
-
-  // Function to toggle the sidebar open/close status.
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  // Function to handle user logout (not fully implemented).
-  const handleLogout = () => {
-    if (user) {
-      user.loginStatus = false; // Update the login status (Note: This might need further implementation).
-    }
-  };
-
-  const handleEventsLink = () => {
-    navigate("/profile", { state: { user: user } });
-  };
-
-  return (
-    <div className={`profile-container ${sidebarOpen ? "sidebar-open" : ""}`}>
-      {/* Sidebar Toggle Button }
-      <div className="sidebar-toggle" onClick={toggleSidebar}>
-        <div className={`toggle-lines ${sidebarOpen ? "open" : ""}`}>
-          &#9776;
-        </div>
-      </div>
-
-      {/* Sidebar }
-      <div className="sidebar">
-        <h2></h2>
-        <ul>
-          <li>
-            <Link to="/Create-Events" onClick={handleEventsLink}>
-              Create Event
-            </Link>
-          </li>
-          <li>
-            <a href="#">Settings</a>
-          </li>
-          <li>
-            <Link to="/Privacy">Privacy Settings</Link>
-          </li>
-          <li>
-            <Link to="/Support">Support Page</Link>
-          </li>
-          <li>
-            <Link to="/Login" onClick={handleLogout}>
-              Log out
-            </Link>{" "}
-          </li>
-        </ul>
-      </div>
-
-      {/* Main Content 
-      <div className="main-content">
-        {profilePicUrl && (
-          <div className="profile-info">
-            <img src={profilePicUrl} alt="Profile" className="profile-pic" />
-            <div className="user-details">
-              <p className="user-name">{user.first_name}</p>
-              <p className="user-username">@{user.username}</p>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export default Profile;
- */
 import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { saveUserBio, getProfilePic, setProfilePic } from "./validation";
+import {
+  saveUserBio,
+  getProfilePic,
+  setProfilePic,
+  savePostAttachment,
+  savePostMetadata,
+  deletePostFromDatabase,
+} from "./validation";
 import "../Front End/Profile.css";
 import "../Front End/NavBar.css";
 import { useLocation } from "react-router-dom";
+
+type Post = {
+  mediaUrl: string;
+  caption: string;
+  postId: string;
+};
 
 function Profile() {
   // State to control the sidebar's open/close status.
@@ -126,6 +33,17 @@ function Profile() {
     string | null
   >(null);
   const profilePicInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [showPostEditor, setShowPostEditor] = useState(false); // to toggle the post editor modal
+  const [caption, setCaption] = useState(""); // to store the caption
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [showOptionsFor, setShowOptionsFor] = useState<string | null>(null);
+
+  const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null);
+  const [isLiked, setIsLiked] = useState(false);
+
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editedCaption, setEditedCaption] = useState("");
 
   // Get the user data from the location state.
   const location = useLocation();
@@ -211,10 +129,72 @@ function Profile() {
     navigate("/profile", { state: { user: user } });
   };
 
+  const handleMediaFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      setSelectedMediaFile(file);
+    }
+  };
+
   const handleJoinEventsLink = (event: React.MouseEvent) => {
     event.preventDefault();
     console.log("Navigating to JoinEvents with user:", user);
     navigate("/join-events", { state: { user: user } });
+  };
+
+  const handleSavePost = async () => {
+    try {
+      const postId = Date.now().toString();
+
+      const mediaUrl = await savePostAttachment(
+        user.username,
+        postId,
+        selectedMediaFile
+      );
+
+      await savePostMetadata(user.username, postId, caption, mediaUrl);
+
+      setPosts([...posts, { mediaUrl, caption, postId }]);
+
+      setShowPostEditor(false);
+      alert("Post saved successfully!");
+    } catch (error) {
+      console.error("Error saving post:", error);
+      alert("An error occurred while saving the post.");
+    }
+  };
+
+  const handleShowOptions = (e: React.MouseEvent, post: Post) => {
+    e.stopPropagation(); // Prevents any parent handlers from being executed
+    setShowOptionsFor(post.postId);
+  };
+
+  const handleDeletePost = async (postId: string, username: string) => {
+    try {
+      await deletePostFromDatabase(postId, username);
+      setPosts((prevPosts) =>
+        prevPosts.filter((post) => post.postId !== postId)
+      );
+
+      alert("Post deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("An error occurred while deleting the post.");
+    }
+  };
+
+  const handleEditClick = (postId: string, currentCaption: string) => {
+    setEditingPostId(postId);
+    setEditedCaption(currentCaption);
+  };
+
+  const handleSaveEditedCaption = (postId: string) => {
+    const updatedPosts = posts.map((post) =>
+      post.postId === postId ? { ...post, caption: editedCaption } : post
+    );
+    setPosts(updatedPosts);
+    setEditingPostId(null);
+    setEditedCaption("");
   };
 
   return (
@@ -298,6 +278,72 @@ function Profile() {
           </div>
           <button onClick={handleSaveBio}>Save Bio</button>
         </div>
+      </div>
+
+      <div className="add-post-btn" onClick={() => setShowPostEditor(true)}>
+        +
+      </div>
+
+      {/* Post Editor Modal */}
+      {showPostEditor && (
+        <div className="post-editor-modal">
+          <input
+            type="file"
+            accept="image/*,video/*"
+            onChange={handleMediaFileChange}
+          />
+          <textarea
+            placeholder="Add a caption..."
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+          />
+          <button onClick={handleSavePost}>Save Post</button>
+        </div>
+      )}
+
+      <div className="posts-container">
+        {posts.map((post, index) => (
+          <div key={index} className="post">
+            <img src={post.mediaUrl} alt="Post" className="post-image" />
+            <p className="post-caption">{post.caption}</p>
+
+            <button
+              className={`love-button ${isLiked ? "liked" : ""}`}
+              onClick={() => setIsLiked(!isLiked)}
+            >
+              {isLiked ? "❤️" : "♡"}
+            </button>
+            <button onClick={() => handleEditClick(post.postId, post.caption)}>
+              ✏️
+            </button>
+
+            <div className="post-options">
+              <button onClick={(e) => handleShowOptions(e, post)}>•••</button>
+            </div>
+            {showOptionsFor === post.postId && (
+              <div className="post-dropdown">
+                <button
+                  onClick={() => handleDeletePost(post.postId, user.username)}
+                >
+                  Delete
+                </button>
+              </div>
+            )}
+            {editingPostId === post.postId ? (
+              <>
+                <textarea
+                  value={editedCaption}
+                  onChange={(e) => setEditedCaption(e.target.value)}
+                />
+                <button onClick={() => handleSaveEditedCaption(post.postId)}>
+                  Save
+                </button>
+              </>
+            ) : (
+              <p className="post-caption">{post.caption}</p>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

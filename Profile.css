@@ -124,3 +124,83 @@
   font-size: 18px;
   margin: 0;
 }
+
+.add-post-btn {
+  width: 50px;
+  height: 50px;
+  background-color: #85C25C;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  transition: transform 0.3s ease-in-out; 
+}
+.add-post-btn:hover {
+  transform: scale(1.2); 
+}
+
+/* Post editor modal */
+.post-editor-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  padding: 20px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+}
+
+.posts-container {
+  background-color: white;
+  padding: 20px;
+  margin-top: 20px;
+  margin-left: 10%;
+  margin-right: 10%;
+  width: 80%;
+}
+
+.post {
+  margin-bottom: 20px;
+}
+
+.post-image {
+  width: 100%;
+}
+
+.love-button {
+  margin-top: 10px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+}
+
+.liked {
+  color: red;
+}
+
+.post-caption {
+  margin: 10px 0;
+}
+
+.post-dropdown {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ddd;
+  width: 100px;
+  z-index: 1000;
+}
+
+.post-dropdown button {
+  background: none;
+  border: none;
+  width: 100%;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+}
