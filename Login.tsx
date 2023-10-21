@@ -1,4 +1,4 @@
-import "./Login.css";
+import "../Front End/Login.css";
 import { login } from "./validation.js";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -10,8 +10,12 @@ const Login = () => {
   // Function to handle the login button click.
   const handleLoginClick = async () => {
     // Get the input values for username and password.
-    const id = document.querySelector('input[name="username"]') as HTMLInputElement;
-    const password = document.querySelector('input[name="password"]') as HTMLInputElement;
+    const id = document.querySelector(
+      'input[name="username"]'
+    ) as HTMLInputElement;
+    const password = document.querySelector(
+      'input[name="password"]'
+    ) as HTMLInputElement;
 
     try {
       // Call the login function with provided credentials.
@@ -45,9 +49,19 @@ const Login = () => {
           <input type="text" name="username" placeholder="Username" required />
         </div>
         <div className="input-box">
-          <input type="password" name="password" placeholder="Password" required />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            required
+          />
         </div>
-        <button type="button" id="loginButton" className="btn" onClick={handleLoginClick}>
+        <button
+          type="button"
+          id="loginButton"
+          className="btn"
+          onClick={handleLoginClick}
+        >
           Login
         </button>
         <li>

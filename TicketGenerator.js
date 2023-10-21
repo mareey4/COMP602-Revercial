@@ -19,7 +19,7 @@ export async function generateTicketID(pageType) {
                 }
 
                 // Checks if generated ticket ID has already been used
-                usedID = await checkExistingTicketID(ticketID, pageType);
+                usedID = await checkExistingTicketID(ticketID.pageType);
 
                 if(usedID) {
                     ticketID = '';

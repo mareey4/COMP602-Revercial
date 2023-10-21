@@ -96,7 +96,7 @@ function Text() {
     ) {
       let resultEmail = await getUserViaEmail(email.value);
       let resultUsername = await getUserViaUsername(username.value);
-      
+
       // Placeholder for default profile picture
       let defaultPFP = "Null";
 
