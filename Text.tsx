@@ -1,16 +1,16 @@
-import "../Front End/Text.css";
+import "../Components/Text.css";
 import {
-  getUserViaEmail,
   saveUserData,
   validateName,
   validateDOB,
   validateUsername,
   validatePassword,
   validateEmail,
-  getUserViaUsername,
-} from "./validation";
+  getUserViaEmail,
+  getUserViaUsername
+} from "../Back End/validation";
 import React, { useState } from "react";
-import User from "./user";
+import User from "../Components/user";
 import { useNavigate, Link } from "react-router-dom";
 
 function Text() {
@@ -20,10 +20,8 @@ function Text() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  // React Router's navigate function for routing
   const navigate = useNavigate();
 
-  // Function to handle the "Create" button click
   const handleCreateClick = async () => {
     const firstName = document.querySelector(
       'input[name="fname"]'
@@ -31,7 +29,9 @@ function Text() {
     const lastName = document.querySelector(
       'input[name="lname"]'
     ) as HTMLInputElement;
-    const dob = document.querySelector('input[name="dob"]') as HTMLInputElement;
+    const dob = document.querySelector(
+      'input[name="dob"]'
+    ) as HTMLInputElement;
     const email = document.querySelector(
       'input[name="email"]'
     ) as HTMLInputElement;
@@ -44,7 +44,6 @@ function Text() {
 
     let errorMsg = "Error:\n";
 
-    // Check if any required fields are empty
     if (
       !firstName.value ||
       !lastName.value ||
@@ -56,7 +55,6 @@ function Text() {
       errorMsg += "  - Please fill in all fields.\n";
     }
 
-    // Validate user inputs using validation functions
     const isFirstNameValid = await validateName(firstName.value);
     const isLastNameValid = await validateName(lastName.value);
     const isDOBValid = await validateDOB(dob.value);
@@ -73,8 +71,7 @@ function Text() {
     }
 
     if (!isUsernameValid) {
-      errorMsg +=
-        "  - Invalid username, must be 4 characters long and must not include special \n    characters.\n";
+      errorMsg += "  - Invalid username, must be 4 characters long and must not include special \n    characters.\n";
     }
 
     if (!isPasswordValid) {
@@ -85,24 +82,21 @@ function Text() {
       errorMsg += "  - Invalid email address.";
     }
 
-    // If all validations pass, proceed with creating the user
     if (
-      isFirstNameValid &&
-      isLastNameValid &&
-      isDOBValid &&
-      isUsernameValid &&
-      isPasswordValid &&
-      isEmailValid
-    ) {
+        isFirstNameValid && 
+        isLastNameValid && 
+        isDOBValid &&
+        isUsernameValid &&
+        isPasswordValid &&
+        isEmailValid
+      ) {
       let resultEmail = await getUserViaEmail(email.value);
       let resultUsername = await getUserViaUsername(username.value);
-      
-      // Placeholder for default profile picture
       let defaultPFP = "Null";
+      let defaultBio = "";
 
       if (resultEmail === undefined) {
-        if (resultUsername === undefined) {
-          // Create a new User object
+        if(resultUsername === undefined) {
           const newUser = new User(
             firstName.value,
             lastName.value,
@@ -111,13 +105,14 @@ function Text() {
             email.value,
             password.value,
             false,
-            defaultPFP
+            defaultPFP,
+            defaultBio
           );
-
-          // Display success message, save user data, and navigate to the profile page
+  
           alert("Successfully Created");
-          saveUserData(newUser);
-          navigate("/profile", { state: { user: newUser } });
+          newUser.loginStatus = true;
+          await saveUserData(newUser); // To save to database
+          navigate("/profile", { state: { user: newUser, target: newUser } }); // Redirect to Profile Page
         } else {
           alert("Existing account with the given username already exists.");
         }
@@ -126,13 +121,11 @@ function Text() {
         return;
       }
     } else {
-      // Display error messages for validation failures
       alert(errorMsg);
       return;
     }
   };
 
-  // JSX component with valid questions to create an account
   return (
     <div className="container">
       <h1>Create Account</h1>
@@ -208,3 +201,4 @@ function Text() {
 }
 
 export default Text;
+   
