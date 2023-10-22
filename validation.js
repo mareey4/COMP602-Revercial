@@ -39,6 +39,28 @@ export async function saveSupportAttachments(subject, ticketID, file) {
     await uploadBytes(refSupport, file);
 }
 
+export async function savePostAttachment(username, postID, file) {
+    const storage = getStorage(fbConfig);
+    const refPost = storageRef(storage, 'Posts/' + username + '/' + postID + '/' + file.name);
+
+    await uploadBytes(refPost, file);
+    return getDownloadURL(refPost);
+}
+
+export async function savePostMetadata(username, postId, caption, mediaUrl) {
+    const db = getDatabase(fbConfig);
+    const postRef = databaseRef(db, 'Posts/' + username + '/' + postId);
+
+    const postData = {
+        caption: caption,
+        mediaUrl: mediaUrl,
+        datePosted: new Date().toISOString() // Saving the post date in ISO format
+    };
+
+    await set(postRef, postData);
+}
+
+
 export async function checkExistingTicketID(ticketID) {
     const db = getDatabase(fbConfig);
     const topicOptions = [
@@ -473,4 +495,45 @@ export function isValidDate(dateString) {
     console.log("Selected Date:", selectedDate);
     console.log("Current Date:", currentDate);
     return selectedDate >= currentDate;
+}
+
+export const deletePostFromDatabase = async (postId, username) => {
+    try {
+        // Delete the post metadata from Firestore
+        await firestore.collection('posts').doc(postId).delete();
+
+        // Delete the post media from Firebase Storage
+        const mediaRef = storage.ref().child(`posts/${username}/${postId}`);
+        await mediaRef.delete();
+
+        return true;
+    } catch (error) {
+        console.error("Error deleting post:", error);
+        return false;
+    }
+};
+
+export async function getPostsForUser(username) {
+    const db = getDatabase(fbConfig);
+    const postRef = databaseRef(db, 'Posts/' + username);
+    let postsArray = [];
+
+    try {
+        const snapshot = await get(postRef);
+        const postsData = snapshot.val();
+
+        if (postsData) {
+            for (const postId in postsData) {
+                postsArray.push({
+                    mediaUrl: postsData[postId].mediaUrl,
+                    caption: postsData[postId].caption,
+                    postId: postId
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Error fetching posts:", error);
+    }
+
+    return postsArray;
 }

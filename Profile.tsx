@@ -6,7 +6,9 @@ import {
   setProfilePic,
   savePostAttachment,
   savePostMetadata,
+  getUserViaEmail,
   deletePostFromDatabase,
+  getPostsForUser,
 } from "./validation";
 import "../Front End/Profile.css";
 import "../Front End/NavBar.css";
@@ -55,6 +57,7 @@ function Profile() {
 
   // Add a state variable for the user's bio
   const [bio, setBio] = useState(user.bio || ""); // Initialize with the user's existing bio, if available
+  const [isEditingBio, setIsEditingBio] = useState(false);
 
   const maxCharacterLimit = 500;
 
@@ -69,6 +72,26 @@ function Profile() {
 
     loadProfilePic();
   }, [unsanitizedEmail, unsanitizedPFPName]);
+
+  useEffect(() => {
+    async function fetchPosts() {
+      const userPosts = await getPostsForUser(user.username);
+      setPosts(userPosts);
+    }
+
+    fetchPosts();
+  }, [user.username]);
+
+  useEffect(() => {
+    async function fetchBio() {
+      const fetchedUser = await getUserViaEmail(user.email);
+      if (fetchedUser) {
+        setBio(fetchedUser.bio || "");
+      }
+    }
+
+    fetchBio();
+  }, [user.email]);
 
   // Function to toggle the sidebar open/close status.
   const toggleSidebar = () => {
@@ -166,15 +189,20 @@ function Profile() {
 
   const handleShowOptions = (e: React.MouseEvent, post: Post) => {
     e.stopPropagation(); // Prevents any parent handlers from being executed
-    setShowOptionsFor(post.postId);
+
+    if (showOptionsFor === post.postId) {
+      setShowOptionsFor(null); // hide the options if they are already shown
+    } else {
+      setShowOptionsFor(post.postId); // otherwise, show them
+    }
   };
 
   const handleDeletePost = async (postId: string, username: string) => {
     try {
-      await deletePostFromDatabase(postId, username);
+      await deletePostFromDatabase(postId, username); // Backend deletion
       setPosts((prevPosts) =>
         prevPosts.filter((post) => post.postId !== postId)
-      );
+      ); // Local state update
 
       alert("Post deleted successfully!");
     } catch (error) {
@@ -184,8 +212,13 @@ function Profile() {
   };
 
   const handleEditClick = (postId: string, currentCaption: string) => {
-    setEditingPostId(postId);
-    setEditedCaption(currentCaption);
+    if (editingPostId === postId) {
+      setEditingPostId(null); // Hide the editor if it's already shown for this post
+      setEditedCaption(""); // Clear the edited caption
+    } else {
+      setEditingPostId(postId); // Show the editor for this post
+      setEditedCaption(currentCaption); // Set the current caption to the edited caption state
+    }
   };
 
   const handleSaveEditedCaption = (postId: string) => {
@@ -195,6 +228,10 @@ function Profile() {
     setPosts(updatedPosts);
     setEditingPostId(null);
     setEditedCaption("");
+  };
+
+  const handleBioEditToggle = () => {
+    setIsEditingBio((prevState) => !prevState); // Toggle the isEditingBio state
   };
 
   return (
@@ -237,98 +274,75 @@ function Profile() {
         </ul>
       </div>
 
-      {/* Main Content */}
-      <div className="main-content">
-        {profilePicUrl && (
-          <div className="profile-info">
-            <label htmlFor="profile-pic" onClick={handleProfilePicChange}>
-              <img
-                src={profilePicUrl || "default-profile-picture-url"}
-                alt="Profile"
-                className="profile-pic"
-              />
-            </label>
-            <input
-              ref={profilePicInputRef}
-              type="file"
-              id="profile-pic"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={handleProfilePicInputChange}
+      {profilePicUrl && (
+        <div className="profile-picture-right">
+          <label htmlFor="profile-pic" onClick={handleProfilePicChange}>
+            <img
+              src={profilePicUrl || "default-profile-picture-url"}
+              alt="Profile"
+              className="profile-pic"
             />
-            <div className="user-details">
-              <p className="user-name">{user.first_name}</p>
-              <p className="user-username">@{user.username}</p>
-            </div>
-          </div>
-        )}
-
-        <h1>Profile</h1>
-        <div className="bio-section">
-          <h2>Bio</h2>
-          <textarea
-            className="bio-textarea"
-            value={bio}
-            onChange={handleBioChange}
-            placeholder="Type your bio here"
-            maxLength={maxCharacterLimit} // Set the maximum character limit
-          />
-          <div className="char-counter">
-            Charcter Count: {bio.length}/{maxCharacterLimit}
-          </div>
-          <button onClick={handleSaveBio}>Save Bio</button>
-        </div>
-      </div>
-
-      <div className="add-post-btn" onClick={() => setShowPostEditor(true)}>
-        +
-      </div>
-
-      {/* Post Editor Modal */}
-      {showPostEditor && (
-        <div className="post-editor-modal">
+          </label>
           <input
+            ref={profilePicInputRef}
             type="file"
-            accept="image/*,video/*"
-            onChange={handleMediaFileChange}
+            id="profile-pic"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={handleProfilePicInputChange}
           />
-          <textarea
-            placeholder="Add a caption..."
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-          />
-          <button onClick={handleSavePost}>Save Post</button>
+          <div className="user-details">
+            <p className="user-name">{user.first_name}</p>
+            <p className="user-username">@{user.username}</p>
+          </div>
+
+          {!isEditingBio && (
+            <div className="bio-display">
+              <p>{bio}</p>
+            </div>
+          )}
+
+          <div className="pencil-icon" onClick={handleBioEditToggle}>
+            &#128393;
+          </div>
+
+          {isEditingBio && (
+            <div className="bio-section">
+              <h2>Bio</h2>
+              <textarea
+                className="bio-textarea"
+                value={bio}
+                onChange={handleBioChange}
+                placeholder="Type your bio here"
+                maxLength={maxCharacterLimit}
+              />
+              <div className="char-counter">
+                Character Count: {bio.length}/{maxCharacterLimit}
+              </div>
+              <button onClick={handleSaveBio}>Save Bio</button>
+            </div>
+          )}
         </div>
       )}
 
       <div className="posts-container">
         {posts.map((post, index) => (
           <div key={index} className="post">
-            <img src={post.mediaUrl} alt="Post" className="post-image" />
-            <p className="post-caption">{post.caption}</p>
+            <img
+              src={post.mediaUrl}
+              alt="Post"
+              className="posts-container img"
+            />
 
-            <button
-              className={`love-button ${isLiked ? "liked" : ""}`}
-              onClick={() => setIsLiked(!isLiked)}
-            >
-              {isLiked ? "❤️" : "♡"}
-            </button>
-            <button onClick={() => handleEditClick(post.postId, post.caption)}>
-              ✏️
-            </button>
-
-            <div className="post-options">
-              <button onClick={(e) => handleShowOptions(e, post)}>•••</button>
+            <div className="post-actions">
+              <button
+                className={`love-button ${isLiked ? "liked" : ""}`}
+                onClick={() => setIsLiked(!isLiked)}
+              >
+                {isLiked ? "❤️" : "♡"}
+              </button>
             </div>
-            {showOptionsFor === post.postId && (
-              <div className="post-dropdown">
-                <button
-                  onClick={() => handleDeletePost(post.postId, user.username)}
-                >
-                  Delete
-                </button>
-              </div>
-            )}
+
             {editingPostId === post.postId ? (
               <>
                 <textarea
@@ -339,11 +353,59 @@ function Profile() {
                   Save
                 </button>
               </>
-            ) : (
-              <p className="post-caption">{post.caption}</p>
-            )}
+            ) : null}
+            <div className="post-caption">
+              <p className="post-caption">
+                @{user.username}: {post.caption}
+              </p>
+            </div>
+            <div className="post-options">
+              <div
+                className="options-button"
+                onClick={(e) => handleShowOptions(e, post)}
+              >
+                •••
+              </div>
+              {showOptionsFor === post.postId && (
+                <div className="post-dropdown">
+                  <button
+                    onClick={() => handleDeletePost(post.postId, user.username)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         ))}
+      </div>
+      {/* Main Content */}
+      <div className="main-content">
+        <div className="add-post-btn" onClick={() => setShowPostEditor(true)}>
+          +
+        </div>
+        {/* Post Editor Modal */}
+        {showPostEditor && (
+          <div className="post-editor-modal">
+            <button
+              className="exit-button"
+              onClick={() => setShowPostEditor(false)}
+            >
+              X
+            </button>
+            <input
+              type="file"
+              accept="image/*,video/*"
+              onChange={handleMediaFileChange}
+            />
+            <textarea
+              placeholder="Add a caption..."
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+            />
+            <button onClick={handleSavePost}>Post</button>
+          </div>
+        )}
       </div>
     </div>
   );
