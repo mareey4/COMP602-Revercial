@@ -1,19 +1,23 @@
 import React, { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import "../Front End/NavBar.css";
-import "../Front End/CreateEvents.css";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import "../Components/NavBar.css";
+import "../Components/CreateEvents.css";
 import { getDatabase, ref, set } from "firebase/database";
-import { fbConfig } from "./firebase";
-import { generateTicketID } from "./TicketGenerator";
+import { fbConfig } from "../Back End/firebase";
+import { generateTicketID } from "../Back End/TicketGenerator";
 import {
   getCurrentDate,
   validateAddress,
   validateDescription,
   isFutureDate,
-} from "./validation";
+} from "../Back End/validation";
 
 function CreateEvents() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentUser = location.state?.user;
+  console.log(currentUser);
+
   // State for sidebar toggle
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -32,14 +36,13 @@ function CreateEvents() {
     location: "",
     description: "",
   });
+
   const [continueButtonDisabled, setContinueButtonDisabled] = useState(true); // State for disabling the "Continue" button
   const [addressValid, setAddressValid] = useState(true);
 
-  const handleProfileLink = async () => {
-    const location = useLocation();
-    const user = location.state?.user;
-    navigate("/profile", { state: { user: user } });
-  };
+  const handleProfileLink = () =>{
+    navigate("/profile", { state: { user: currentUser } });
+  }
 
   const eventChoices = [
     "Gala",
@@ -94,7 +97,7 @@ function CreateEvents() {
 
     try {
       // Generate a unique ticket ID
-      const ticketID = await generateTicketID("Events");
+      const ticketID = await generateTicketID("Events", undefined);
 
       const eventDetailsWithTicketID = {
         ...eventDetails,
@@ -159,7 +162,7 @@ function CreateEvents() {
         <h2></h2>
         <ul>
           <li>
-            <Link to="/Profile" onClick={handleProfileLink}>
+            <Link to="/profile" onClick={handleProfileLink}>
               Profile
             </Link>
           </li>
