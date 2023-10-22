@@ -157,7 +157,7 @@ function Support() {
 
     // If inputs are valid saves inputs to the database
     if (validEmail && validSubject && validDescription) {
-      const ticketID = await generateTicketID("Support"); // Generates a unique randomized ticket ID
+      const ticketID = await generateTicketID("Support", undefined); // Generates a unique randomized ticket ID
       const newQuery = new Query(
         ticketID,
         email.value,

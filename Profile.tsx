@@ -1,18 +1,32 @@
-import { useEffect, useState, useRef } from "react";
+import {
+  useEffect,
+  useState,
+  useRef,
+  ChangeEvent,
+  SetStateAction,
+} from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
+  getAllUsers,
+  getFriendsList,
+  checkFriends,
+  addFriend,
+  removeFriend,
+  getFilteredUsersPFP,
   saveUserBio,
   getProfilePic,
   setProfilePic,
   savePostAttachment,
   savePostMetadata,
   getUserViaEmail,
-  deletePostFromDatabase,
+  deletePostMediaFromStorage,
+  deletePost,
   getPostsForUser,
 } from "./validation";
 import "../Front End/Profile.css";
 import "../Front End/NavBar.css";
 import { useLocation } from "react-router-dom";
+import User from "../Back End/user";
 
 type Post = {
   mediaUrl: string;
@@ -25,6 +39,13 @@ function Profile() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [profilePicUrls, setProfilePicUrls] = useState<string[]>([]);
+  const [friendsPFPUrls, setFriendsPFPUrls] = useState<string[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [addButtonDisplay, setAddButtonDisplay] = useState(false);
+  const [removeButtonDisplay, setRemoveButtonDisplay] = useState(false);
 
   // State to store the profile picture URL.
   const [profilePicUrl, setProfilePicUrl] = useState(null);
@@ -61,17 +82,68 @@ function Profile() {
 
   const maxCharacterLimit = 500;
 
+  const searchContainerRef = useRef(null);
+  const currentUser = location.state?.user;
+  const targetUser = location.state?.target;
+  const targetEmail = targetUser.email;
+  let friends: User[];
+  let pfpName = "Null";
+
+  if (targetUser.profilePic !== pfpName) {
+    pfpName = targetUser.profilePic;
+  }
+
   // useEffect to load the user's profile picture.
   useEffect(() => {
     async function loadProfilePic() {
-      const url = await getProfilePic(unsanitizedEmail, unsanitizedPFPName);
+      const url = await getProfilePic(targetEmail, pfpName);
       if (url) {
         setProfilePicUrl(url);
       }
     }
 
     loadProfilePic();
-  }, [unsanitizedEmail, unsanitizedPFPName]);
+  }, [targetEmail, pfpName]);
+
+  useEffect(() => {
+    async function loadFriends() {
+      friends = await getFriendsList(currentUser.email);
+
+      if (friends.length > 0) {
+        loadFriendsPFP();
+      }
+    }
+
+    loadFriends();
+  }, []);
+
+  async function loadFriendsPFP() {
+    const friendsPFPs = await getFilteredUsersPFP(friends);
+    // console.log(friendsPFPs);
+
+    setFriendsPFPUrls(friendsPFPs);
+  }
+
+  useEffect(() => {
+    // Add a click event listener to the document
+    const handleClickOutside = (event: { target: any }) => {
+      if (
+        searchContainerRef.current &&
+        !(searchContainerRef.current as HTMLElement).contains(event.target)
+      ) {
+        // Clicked outside of the search container, close the dropdown
+        setDropdownOpen(false);
+      }
+    };
+
+    // Attach the event listener
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      // Remove the event listener when the component unmounts
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     async function fetchPosts() {
@@ -96,6 +168,68 @@ function Profile() {
   // Function to toggle the sidebar open/close status.
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
+  };
+
+  const handleAddButton = async () => {
+    const check = await checkFriends(currentUser.email, targetEmail);
+    if (currentUser.email !== targetUser.email && !check) {
+      await addFriend(currentUser, targetUser);
+    }
+  };
+
+  useEffect(() => {
+    async function updateAddButtonDisplay() {
+      const check = await checkFriends(currentUser.email, targetEmail);
+      setAddButtonDisplay(currentUser.email !== targetUser.email && !check);
+    }
+
+    updateAddButtonDisplay();
+  }, [currentUser.email, targetEmail]);
+
+  const handleRemoveButton = async () => {
+    const check = await checkFriends(currentUser.email, targetEmail);
+    if (currentUser.email !== targetUser.email && check) {
+      await removeFriend(currentUser, targetUser);
+    }
+  };
+
+  useEffect(() => {
+    async function updateRemoveButtonDisplay() {
+      const check = await checkFriends(currentUser.email, targetEmail);
+      setRemoveButtonDisplay(currentUser.email !== targetUser.email && check);
+    }
+
+    updateRemoveButtonDisplay();
+  }, [currentUser.email, targetEmail]);
+
+  const handleSearch = async (event: ChangeEvent<HTMLInputElement>) => {
+    const searchTerm = event.target.value;
+    const holder = await getAllUsers();
+    setSearchTerm(searchTerm);
+
+    // Check if searchTerm is empty or contains only white-space characters
+    if (!searchTerm.trim()) {
+      setFilteredUsers([]);
+      return;
+    }
+
+    // Filter users based on search term
+    const filtered = holder.filter(
+      (user: { first_name: string; surname: string; username: string }) =>
+        user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.surname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.username.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    let pfpURLS: SetStateAction<string[]> = [];
+
+    if (filtered.length > 0) {
+      pfpURLS = await getFilteredUsersPFP(filtered);
+    }
+
+    setProfilePicUrls(pfpURLS);
+    setFilteredUsers(filtered);
+    setDropdownOpen(true);
   };
 
   // Function to handle user logout (not fully implemented).
@@ -199,7 +333,7 @@ function Profile() {
 
   const handleDeletePost = async (postId: string, username: string) => {
     try {
-      await deletePostFromDatabase(postId, username); // Backend deletion
+      await deletePost(postId, user.username); // Backend deletion
       setPosts((prevPosts) =>
         prevPosts.filter((post) => post.postId !== postId)
       ); // Local state update
@@ -294,6 +428,20 @@ function Profile() {
           <div className="user-details">
             <p className="user-name">{user.first_name}</p>
             <p className="user-username">@{user.username}</p>
+            <button
+              className="add-button"
+              onClick={handleAddButton}
+              style={{ display: addButtonDisplay ? "block" : "none" }}
+            >
+              Add Friend
+            </button>
+            <button
+              className="remove-button"
+              onClick={handleRemoveButton}
+              style={{ display: removeButtonDisplay ? "block" : "none" }}
+            >
+              Remove Friend
+            </button>
           </div>
 
           {!isEditingBio && (
@@ -404,6 +552,45 @@ function Profile() {
               onChange={(e) => setCaption(e.target.value)}
             />
             <button onClick={handleSavePost}>Post</button>
+          </div>
+        )}
+      </div>
+      <div ref={searchContainerRef} className="search-container">
+        {/* Search Bar */}
+        <input
+          type="text"
+          placeholder="Search for users..."
+          value={searchTerm}
+          onChange={handleSearch}
+        />
+        {/* Search Results Dropdown */}
+        {dropdownOpen && (
+          <div className="search-results">
+            <ul>
+              {filteredUsers.map((targetUser, index) => (
+                <li
+                  key={index}
+                  onClick={() => {
+                    setSearchTerm("");
+                    setDropdownOpen(false);
+                    navigate("/profile", {
+                      state: { user: currentUser, target: targetUser },
+                    });
+                  }}
+                >
+                  <div className="search-result-entry">
+                    <img
+                      src={profilePicUrls[index]}
+                      alt="Profile"
+                      className="search-result-pic"
+                    />
+                    <div className="search-result-details">
+                      <p>{targetUser.username}</p>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>

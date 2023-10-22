@@ -1,6 +1,6 @@
+// Constructor for a User object
 class User {
-  // Constructor method to initialize user properties
-  constructor(first_name, surname, username, date_of_birth, email, password, loginStatus, profilePic) {
+  constructor(first_name, surname, username, date_of_birth, email, password, loginStatus, profilePic, bio) {
     this.first_name = first_name;
     this.surname = surname;
     this.username = username;
@@ -8,15 +8,9 @@ class User {
     this.email = email;
     this.password = password;
     this.loginStatus = loginStatus;
-    
-    // Check if a profile picture is provided
-    if(profilePic !== undefined || profilePic !== null) {
-      this.profilePic = profilePic;
-    } else {
-      this.profilePic = undefined;
-    }
+    this.profilePic = profilePic;
+    this.bio = bio;
   }
 }
 
 export default User;
-  

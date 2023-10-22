@@ -25,7 +25,9 @@ const Login = () => {
         if (resultUser.loginStatus) {
           // If login is successful, show an alert and navigate to the profile page.
           alert("Login Successful");
-          navigate("/profile", { state: { user: resultUser } });
+          navigate("/profile", {
+            state: { user: resultUser, target: resultUser },
+          });
         } else {
           // If the password is wrong, show an alert.
           alert("Wrong password!");

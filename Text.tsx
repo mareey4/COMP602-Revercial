@@ -117,7 +117,7 @@ function Text() {
           // Display success message, save user data, and navigate to the profile page
           alert("Successfully Created");
           saveUserData(newUser);
-          navigate("/profile", { state: { user: newUser } });
+          navigate("/profile", { state: { user: newUser, target: newUser } });
         } else {
           alert("Existing account with the given username already exists.");
         }

@@ -97,7 +97,7 @@ function CreateEvents() {
 
     try {
       // Generate a unique ticket ID
-      const ticketID = await generateTicketID("Events");
+      const ticketID = await generateTicketID("Events", undefined);
 
       const newEvent = new Events(
         eventDetails.date,
@@ -105,13 +105,15 @@ function CreateEvents() {
         eventDetails.location,
         ticketID
       );
-
+      newEvent.eventType = selectedEventType;
       // Access Firebase database
       const db = getDatabase(fbConfig);
       const eventTypePath = selectedEventType.replace(/ /g, "_");
       const eventPath = `Events/${eventTypePath}/${ticketID}`;
       const eventRef = ref(db, eventPath);
 
+      console.log("Event Path:", eventPath);
+      console.log("Event Data:", newEvent);
       // Set event details in the database
       set(eventRef, newEvent);
 
