@@ -2,7 +2,7 @@ import { fbConfig } from './firebase';
 import { getDatabase, ref, set, onValue, remove } from 'firebase/database'
 
 // Function to generate a random ticket ID
-export async function generateTicketID(pageType) {
+export async function generateTicketID(pageType, email) {
         // Define characters and length for the ticket ID
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         const length = 8;
@@ -19,7 +19,7 @@ export async function generateTicketID(pageType) {
                 }
 
                 // Checks if generated ticket ID has already been used
-                usedID = await checkExistingTicketID(ticketID, pageType);
+                usedID = await checkExistingTicketID(ticketID, pageType, email);
 
                 if(usedID) {
                     ticketID = '';
@@ -32,7 +32,7 @@ export async function generateTicketID(pageType) {
     }
 
 // Function to check if a ticket ID exists in Firebase database
-export async function checkExistingTicketID(ticketID, pageType) {
+export async function checkExistingTicketID(ticketID, pageType, email) {
     const db = getDatabase(fbConfig);
     const topicOptions = [
         'Account Issues',
@@ -83,6 +83,21 @@ export async function checkExistingTicketID(ticketID, pageType) {
         
         const result = await Promise.all(promises);
         validID = result.some((exists) => exists);
+    } else if(pageType === "Profile") {
+        if(email !== undefined) {
+            let sanitizedEmail;
+
+            if(email.includes(".")) {
+                sanitizedEmail = email.replaceAll(".", ",");
+            } else {
+                sanitizedEmail = email;
+            }
+
+            const refFriends = databaseRef(db, 'Friends/' + sanitizedEmail);
+            const refTicket = child(refFriends, ticketID);
+            const snapshot = await get(refTicket);
+            return snapshot.exists();
+        }
     }
     
     return validID;
