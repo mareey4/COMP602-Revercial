@@ -1,8 +1,12 @@
-import { getDatabase, ref as databaseRef, get, set, onValue, remove, child } from 'firebase/database';
+// Imports
+import { getDatabase, ref as databaseRef, get, set, onValue, remove } from 'firebase/database';
 import { getStorage, uploadBytes, getDownloadURL, ref as storageRef } from 'firebase/storage';
 import { fbConfig } from './firebase';
-import User from './user';
+import User from '../Components/user';
+import FriendRequest from '../Components/friendRequest';
+import { generateTicketID } from './TicketGenerator';
 
+// Saves the user data to the database
 export async function saveUserData(newUser) {
     const db = getDatabase(fbConfig);
     const sanitizedEmail = newUser.email.replaceAll(".",",");
@@ -15,10 +19,55 @@ export async function saveUserData(newUser) {
         Username: newUser.username,
         Password: newUser.password,
         Login_Status: newUser.loginStatus,
-        Profile_Pic: newUser.profilePic
+        Profile_Pic: newUser.profilePic,
+        Bio: newUser.bio
+    });
+
+    await createFriendsList(sanitizedEmail);
+    await createInbox(sanitizedEmail);
+}
+
+async function createFriendsList(email) {
+    const db = getDatabase(fbConfig);
+    let sanitizedEmail;
+
+    if(email.includes(".")) {
+        sanitizedEmail = email.replaceAll(".", ",");
+    } else {
+        sanitizedEmail = email;
+    }
+
+    const refFriends = databaseRef(db, 'Friends/' + sanitizedEmail);
+
+    set(refFriends, {
+        Holder: "Do not remove"
     });
 }
 
+async function createInbox(email) {
+    const db = getDatabase(fbConfig);
+    let sanitizedEmail;
+
+    if(email.includes(".")) {
+        sanitizedEmail = email.replaceAll(".", ",");
+    } else {
+        sanitizedEmail = email;
+    }
+
+    const refInbox = databaseRef(db, 'Inbox/' + sanitizedEmail);
+
+    set(refInbox, {
+        Holder: "Do not remove"
+    });
+
+    const refFriendRequests = databaseRef(db, 'Inbox/' + sanitizedEmail + "/Friend_Requests");
+
+    set(refFriendRequests, {
+        Holder: "Do not remove"
+    });
+}
+
+// Save query data to the database
 export async function saveSupportInfo(query) {
     const db = getDatabase(fbConfig);
     const refSupport = databaseRef(db, 'Support/' + query.subject + '/' + query.ticketID);
@@ -31,6 +80,7 @@ export async function saveSupportInfo(query) {
     });
 }
 
+// Saves query attachments to storage
 export async function saveSupportAttachments(subject, ticketID, file) {
     const storage = getStorage(fbConfig);
     const refSupport = storageRef(storage, 'Support/' + subject + '/' + ticketID + '/' + file.name);
@@ -38,6 +88,7 @@ export async function saveSupportAttachments(subject, ticketID, file) {
     await uploadBytes(refSupport, file);
 }
 
+// Sets the profile picture for the given user email in storage
 export async function setProfilePic(email, file) {
     const storage = getStorage(fbConfig);
     const refUser = storageRef(storage, 'Users/' + email + '/' + 'ProfilePic/' + file.name);
@@ -45,14 +96,31 @@ export async function setProfilePic(email, file) {
     await uploadBytes(refUser, file);
 }
 
+// Gets the profile picture for the given user from storage
 export async function getProfilePic(email, filename) {
     const storage = getStorage(fbConfig);
+    let sanitizedEmail;
+    let sanitizedFileName;
+
+    if(email.includes(".")) {
+        sanitizedEmail = email.replaceAll(".", ",");
+    } else {
+        sanitizedEmail = email;
+    }
+
+    if(filename.includes(",")) {
+        sanitizedFileName = filename.replaceAll(",", ".");
+    } else {
+        sanitizedFileName = filename;
+    }
+
     let refUser;
 
+    // Checks if user has a uploaded profile picture, otherwise loads the default picture
     if(filename === "Null") {
         refUser = storageRef(storage, 'Defaults/Default-PFP.jpg');
     } else {
-        refUser = storageRef(storage, 'Users/' + email + '/ProfilePic/' + filename);
+        refUser = storageRef(storage, 'Users/' + sanitizedEmail + '/ProfilePic/' + sanitizedFileName);
     }
     
     return new Promise(async (resolve) => {
@@ -68,6 +136,22 @@ export async function getProfilePic(email, filename) {
     });
 }
 
+// Gets the profile pictures for the filtered users from storage
+export async function getFilteredUsersPFP(filtered) {
+    const pfpURLS = [];
+
+    return new Promise(async (resolve) => {
+        for (const user of filtered) {
+            const url = await getProfilePic(user.email, user.profilePic);
+            pfpURLS.push(url);
+        }
+
+        resolve(pfpURLS);
+        return;
+    });
+}
+
+// Gets the user via a given email address
 export async function getUserViaEmail(userEmail) {
     const db = getDatabase(fbConfig);
     const refEmail = databaseRef(db, 'Users');
@@ -89,7 +173,8 @@ export async function getUserViaEmail(userEmail) {
                         email,
                         userData.Password,
                         userData.Login_Status,
-                        userData.Profile_Pic
+                        userData.Profile_Pic,
+                        userData.Bio
                     );
 
                     resolve(user);
@@ -97,12 +182,14 @@ export async function getUserViaEmail(userEmail) {
                 }
             }
 
+            // Returns undefined if no user is found with the given email
             resolve(undefined);
             return;
         });
     });
 }
 
+// Gets the user via a given username
 export async function getUserViaUsername(username) {
     const db = getDatabase(fbConfig);
     const reference = databaseRef(db, 'Users');
@@ -123,7 +210,8 @@ export async function getUserViaUsername(username) {
                         email,
                         userData.Password,
                         userData.Login_Status,
-                        userData.Profile_Pic
+                        userData.Profile_Pic,
+                        userData.Bio
                     );
 
                     resolve(user);
@@ -131,12 +219,14 @@ export async function getUserViaUsername(username) {
                 }
             }
 
+            // Returns undefined if no user is found with the given username
             resolve(undefined);
             return;
         });
     });
 }
 
+// Deletes a user from the database
 export async function deleteAccount(user) {
     const db = getDatabase(fbConfig);
     const refUsers = databaseRef(db, 'Users');
@@ -146,27 +236,31 @@ export async function deleteAccount(user) {
 
         for(const email in users) {
             if(email === user.email) {
-                remove(ref(db, 'Users/' + email));
+                remove(databaseRef(db, 'Users/' + email));
             }
         }
     });
 }
 
+// Logs in the user via the given ID and password
 export async function login(id, password) {
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z.-]{2,}$/;
     let user;
 
     return new Promise(async (resolve) => {
+        // Checks if given ID is a username or email
         if(emailRegex.test(id)) {
             user = await getUserViaEmail(id);
     
             if(user !== undefined && user.password === password) {
+                // Sets status to true if given password matches saved password
                 user.loginStatus = true;
             }
         } else {
             user = await getUserViaUsername(id);
     
             if(user !== undefined && user.password === password) {
+                // Sets status to true if given password matches saved password
                 user.loginStatus = true;
             }
         }
@@ -176,33 +270,270 @@ export async function login(id, password) {
     });
 }
 
-export async function getAllUsers() {
+// Sends a friend request to a user's inbox
+// Saves a friend request message in the target recipent's inbox in the database
+async function sendFriendRequest(recipient, sender) {
     const db = getDatabase(fbConfig);
-    const refUsers = ref(db, 'Users');
-    const users = [];
+    let sanitizedRecipient;
+    let sanitizedSender;
 
-    onValue(refUsers, (snapshot) => {
-        const data = snapshot.val();
+    if(recipient.email.includes(".")) {
+        sanitizedRecipient = recipient.email.replaceAll(".",",");
+    } else {
+        sanitizedRecipient = recipient.email;
+    }
+    
+    if(sender.email.includes(".")) {
+        sanitizedSender = emailSender.email.replaceAll(".",",");
+    } else {
+        sanitizedSender = sender.email;
+    }
 
-        for(const email in data){
-            const userData = data[email];
+    const refFriendRequests = databaseRef(db, 'Inbox/' + sanitizedRecipient + '/Friend_Requests/' + sanitizedSender);
+    const currentDate = new Date();
+    const currentDateString = currentDate.getDate() + "-" + currentDate.getMonth() + "-" + currentDate.getFullYear();
+    const requestMsg = sender.username + " would like to add you as a friend.";
+    let addStatus = -1;
 
-            const user = new User(
-                userData.Name,
-                userData.Surname,
-                userData.Username,
-                userData.DOB,
-                email,
-                userData.Password
-            );
-
-            users.push(user);
-        }
+    set(refFriendRequests, {
+        Message: requestMsg,
+        Status: addStatus,
+        Date: currentDateString
     });
-
-    return users;
 }
 
+// Gets all friend requests from the users inbox in the database
+// Returns a data structure containing all friend requests to the function caller
+export async function getFriendRequests(email) {
+    const db = getDatabase(fbConfig);
+    const sanitizedEmail = email.replaceAll(".",",");
+    const refFriendRequests = databaseRef(db, 'Users/' + sanitizedEmail + '/Inbox/Friend_Requests');
+    const requestInbox = [];
+
+    return new Promise((resolve) => {
+        onValue(refFriendRequests, (snapshot) => {
+            const requests = snapshot.val();
+            
+            for(const emails in requests) {
+                const requestData = requests[emails];
+                const date = new Date(requestData.Date);
+
+                const request = new FriendRequest(
+                    requestData.Message,
+                    requestData.Status,
+                    date
+                );
+
+                requestInbox.push(request);
+            }
+        });
+
+        resolve(requestInbox);
+        return;
+    });
+}
+
+// Gets all direct messages from the users inbox in the database
+// Returns a data structure containing all the direct messages to the function caller
+export async function getDM(email) {
+    const sanitizedEmail = email.replaceAll(".",",");
+    const db = getDatabase(fbConfig);
+
+    let directMsgs = [];
+
+    return new Promise((resolve) => {
+
+
+        resolve(directMsgs);
+        return;
+    });
+}
+
+// Gets all system messages from the users inbox in the database
+// Returns a data structure containing all the system messages to the function caller
+export async function getSystemMsg(email) {
+    const sanitizedEmail = email.replaceAll(".",",");
+    const db = getDatabase(fbConfig);
+
+    let sysMessages = [];
+
+    return new Promise((resolve) => {
+
+
+        resolve(sysMessages);
+        return;
+    });
+}
+
+// Gets all the messages from the users inbox in the database and orders them by date
+// Returns a data structure containing all the messages
+export async function getInbox(email) {
+    const db = getDatabase(fbConfig);
+    const refUsers = databaseRef(db, 'Users');
+    
+    let messages = [];
+    let friendRequests = getFriendRequests(email);
+    let directMsgs = getDM(email);
+    let sysMessages = getSystemMsg(email);
+    let maxSize;
+    
+}
+
+// Gets all the users from the database as user objects
+export async function getAllUsers() {
+    const db = getDatabase(fbConfig);
+    const refUsers = databaseRef(db, 'Users');
+    const users = [];
+
+    return new Promise((resolve) => {
+        onValue(refUsers, (snapshot) => {
+            const data = snapshot.val();
+    
+            for(const email in data){
+                const userData = data[email];
+    
+                const user = new User(
+                    userData.Name,
+                    userData.Surname,
+                    userData.Username,
+                    userData.DOB,
+                    email,
+                    userData.Password,
+                    userData.Login_Status,
+                    userData.Profile_Pic,
+                    userData.Bio
+                );
+    
+                users.push(user);
+            }
+        });
+    
+        resolve(users);
+        return;
+    });
+}
+
+// Gets the user's friends list from the database
+export async function getFriendsList(email) {
+    const db = getDatabase(fbConfig);
+    let sanitizedEmail = "";
+
+    if (email.includes(".")) {
+        sanitizedEmail = email.replaceAll(".", ",");
+    } else {
+        sanitizedEmail = email;
+    }
+
+    const refFriends = databaseRef(db, 'Friends/' + sanitizedEmail);
+    const friends = [];
+
+    return new Promise((resolve) => {
+        onValue(refFriends, async (snapshot) => {
+            const data = snapshot.val();
+    
+            for (let ids in data) {
+                if (ids !== "Holder") {
+                    const refUser = databaseRef(db, 'Friends/' + sanitizedEmail + '/' + ids);
+
+                    onValue(refUser, async (snapshot) => {
+                        const userData = snapshot.val();
+                        const username = userData.Username;
+                        const user = await getUserViaUsername(username);
+
+                        friends.push(user);
+                    });
+                }
+            }
+        });
+        
+        resolve(friends);
+        return;
+    });
+}
+
+export async function checkFriends(currentEmail, targetEmail) {
+    const friends = await getFriendsList(currentEmail);
+    let sanitizedTarget = "";
+
+    if (targetEmail.includes(".")) {
+        sanitizedTarget = targetEmail.replaceAll(".", ",");
+    } else {
+        sanitizedTarget = targetEmail;
+    }
+
+    return new Promise((resolve) => {
+        for (const user of friends) {
+            if (user.email === sanitizedTarget) {
+                resolve(true);
+                return;
+            }
+        }
+
+        resolve(false);
+        return;
+    });
+}
+
+// Adds the target user to the current user's friends list
+export async function addFriend(currentUser, targetUser) {
+    const db = getDatabase(fbConfig);
+    let sanitizedCurrentEmail;
+    const username = targetUser.username;
+
+    if (currentUser.email.includes(".")) {
+        sanitizedCurrentEmail = currentUser.email.replaceAll(".", ",");
+    } else {
+        sanitizedCurrentEmail = currentUser.email;
+    }
+
+    await sendFriendRequest(targetUser, currentUser);
+    const randTicket = await generateTicketID("Profile");
+    const refFriends = databaseRef(db, 'Friends/' + sanitizedCurrentEmail + "/" + randTicket);
+
+    return new Promise(() => {
+        set(refFriends, {
+            Username: username
+        });
+
+        return;
+    });
+}
+
+// Removes the target user from the current user's friends list
+export async function removeFriend(currentUser, targetUser) {
+    const db = getDatabase(fbConfig);
+    let sanitizedCurrentEmail;
+
+    if (currentUser.email.includes(".")) {
+        sanitizedCurrentEmail = currentUser.email.replaceAll(".", ",");
+    } else {
+        sanitizedCurrentEmail = currentUser.email;
+    }
+
+    const refFriends = databaseRef(db, 'Friends/' + sanitizedCurrentEmail);
+
+    return new Promise(() => {
+        onValue(refFriends, async (snapshot) => {
+            const data = snapshot.val();
+    
+            for(const ticket in data) {
+                if(ticket !== "Holder") {
+                    const ticketData = data[ticket];
+                    const username = ticketData.Username;
+                    
+                    if(targetUser.username === username) {
+                        remove(databaseRef(db, 'Friends/' + sanitizedCurrentEmail + "/" + ticket));
+                        break;
+                    }
+                }
+            }
+        });
+
+        return;
+    });
+}
+
+// Validates the given name for invalid characters
 export async function validateName(name) {
     const nameRegex = /^[a-zA-Z\s-]+$/;
     let valid = false;
@@ -219,6 +550,7 @@ export async function validateName(name) {
     });
 }
 
+// Validates the Date of Birth for valid values
 export async function validateDOB(dob) {
     const dateArray = dob.split("-");
     const givenDOB = new Date(dateArray[0], (dateArray[1] - 1), dateArray[2]);
@@ -279,6 +611,7 @@ export async function validateDOB(dob) {
     });
 }
 
+// Validates age based on given values
 export async function validateAge(givenDOB, currentDate) {
     let validAge = false;
 
@@ -300,6 +633,7 @@ export async function validateAge(givenDOB, currentDate) {
     });
 }
 
+// Validates given email for valid format and characters
 export async function validateEmail(email) {
     let validEmail = false;
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z.-]{2,}$/;
@@ -314,6 +648,8 @@ export async function validateEmail(email) {
     });
 }
 
+
+// Validates given username for valid format and characters
 export async function validateUsername(username) {
     let validUsername = false;
     const usernameRegex = /^[a-zA-Z0-9_]*$/;
@@ -330,6 +666,7 @@ export async function validateUsername(username) {
     });
 }
 
+// Validates given password for valid format and characters
 export async function validatePassword(password) {
     let validPassword = false;
     const uppercase = /[A-Z]/;
@@ -351,6 +688,7 @@ export async function validatePassword(password) {
         return;
     });
 }
+
 
 export function getCurrentDate() {
     const today = new Date();
@@ -379,7 +717,7 @@ export function validateAddress(address) {
     return addressRegex.test(address);
 }
   
-export function validateDescription(description) {
+export async function validateDescription(description) {
     return description.length <= 500;
 }
 
