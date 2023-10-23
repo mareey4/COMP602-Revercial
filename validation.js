@@ -4,7 +4,6 @@ import { fbConfig } from './firebase';
 import User from './user';
 import FriendRequest from '../Back End/friendRequest';
 
-
 // Saves the user data to the database
 export async function saveUserData(newUser) {
     const db = getDatabase(fbConfig);
@@ -22,11 +21,11 @@ export async function saveUserData(newUser) {
         Bio: newUser.bio
     });
 
-    await createFriendsList(sanitizedEmail);
+     await createFriendsList(sanitizedEmail);
     await createInbox(sanitizedEmail);
 }
 
-async function createFriendsList(email) {
+ async function createFriendsList(email) {
     const db = getDatabase(fbConfig);
     let sanitizedEmail;
 
@@ -76,14 +75,14 @@ export async function saveSupportInfo(query) {
         Description: query.description,
         Files: query.fileNames
     });
-}
+} 
 
 export async function saveSupportAttachments(subject, ticketID, file) {
     const storage = getStorage(fbConfig);
     const refSupport = storageRef(storage, 'Support/' + subject + '/' + ticketID + '/' + file.name);
 
     await uploadBytes(refSupport, file);
-}
+} 
 
 export async function savePostAttachment(username, postID, file) {
     const storage = getStorage(fbConfig);
@@ -107,7 +106,7 @@ export async function savePostMetadata(username, postId, caption, mediaUrl) {
 }
 
 
-export async function checkExistingTicketID(ticketID) {
+ export async function checkExistingTicketID(ticketID) {
     const db = getDatabase(fbConfig);
     const topicOptions = [
         'Account Issues',
@@ -211,7 +210,7 @@ export async function getFilteredUsersPFP(filtered) {
         resolve(pfpURLS);
         return;
     });
-}
+} 
 
 // Sends a friend request to a user's inbox
 // Saves a friend request message in the target recipent's inbox in the database
@@ -714,17 +713,20 @@ export function isValidDate(dateString) {
     return selectedDate >= currentDate;
 }
 
-export async function deletePostMediaFromStorage(username, postID) {
+export async function deletePostMediaFromStorage(username, postId, fileName) {
+    console.log("Username:", username); // Logging for debugging
+    console.log("Post ID:", postId); // Logging for debugging
+console.log(fileName);
     const storage = getStorage(fbConfig);
-    const postMediaRef = storageRef(storage, `Posts/${username}/${postID}`);
+    const postMediaRef = storageRef(storage, `Posts/${username}/${postId}/${fileName}`);
     await deleteObject(postMediaRef);  // This deletes the entire directory for the post, removing all media associated with it.
 }
 
-export async function deletePost(postId, username) {
-    await deletePostMediaFromStorage(username, postId);
+export async function deletePost(username, postId, fileName) {
+    await deletePostMediaFromStorage(username, postId, fileName);
     
     const db = getDatabase(fbConfig);
-    const postRef = ref(db, `Posts/${username}/${postId}`);
+    const postRef = ref(db, `Posts/${username}/${postId}/${fileName}`);
     await remove(postRef);
 }
 
@@ -743,7 +745,8 @@ export async function getPostsForUser(username) {
                 postsArray.push({
                     mediaUrl: postsData[postId].mediaUrl,
                     caption: postsData[postId].caption,
-                    postId: postId
+                    postId: postId,
+                    fileName: postId.fileName
                 });
             }
         }

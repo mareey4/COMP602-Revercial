@@ -186,7 +186,7 @@ function Joinevents() {
             </Link>
           </li>
           <li>
-            <a href="#">Settings</a>
+            <Link to="Join-Events">Join Events</Link>
           </li>
           <li>
             <Link to="/Privacy">Privacy Settings</Link>
@@ -198,9 +198,6 @@ function Joinevents() {
             <Link to="/Login" onClick={handleLogout}>
               Log out
             </Link>
-          </li>
-          <li>
-            <Link to="Join-Events">Join Events</Link>
           </li>
         </ul>
       </div>

@@ -1,5 +1,16 @@
+.main-wrapper {
+  display: flex;               /* Convert the wrapper into a flex container */
+  justify-content: center;     /* Center the main content horizontally */
+  align-items: flex-start;     /* Align the content to the top */
+  padding: 20px;               /* Provide some spacing around the edges */
+  height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;   /* Allow scrolling if content overflows */
+}
+
 /* Container styles */
 .profile-picture-right {
+  width: 300px;
   position: fixed;
   top: 20px;
   right: 20px;
@@ -18,7 +29,6 @@
   width: 250px;
   background-color: #85C25C;
   color: #fff;
-  padding: 20px;
   position: fixed;
   left: -250px; /* Initially, push it to the left side */
   top: 0;
@@ -69,6 +79,11 @@
 /* Main content styles */
 .main-content {
   flex: 1;
+  max-width: 800px;            /* Set a max width for readability */
+  width: 100%;                 /* Use all available space up to max-width */
+  box-sizing: border-box;      /* Ensure padding is included in width calculations */
+  padding: 0 20px;             /* Provide horizontal padding */
+
   padding: 20px;
 }
 
@@ -80,7 +95,6 @@
 /* Sidebar Toggle Button styles */
 .sidebar-toggle {
   cursor: pointer;
-  padding: 10px;
   position: fixed;
   left: 0;
   top: 0;
@@ -365,6 +379,10 @@ height: fit-content;
 }
 
 .search-container {
+  position: fixed;   
+  top: 20px;      
+  left: 0px;       /* 20px from the right */
+  z-index: 10;
   position: relative;
   margin-top: 10px;
 }

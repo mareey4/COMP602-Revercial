@@ -32,6 +32,7 @@ type Post = {
   mediaUrl: string;
   caption: string;
   postId: string;
+  fileName: string;
 };
 
 function Profile() {
@@ -64,7 +65,7 @@ function Profile() {
 
   const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null);
   const [isLiked, setIsLiked] = useState(false);
-
+  const [fileName, setFileName] = useState("");
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editedCaption, setEditedCaption] = useState("");
 
@@ -290,6 +291,7 @@ function Profile() {
     const file = e.target.files && e.target.files[0];
     if (file) {
       setSelectedMediaFile(file);
+      setFileName(file.name);
     }
   };
 
@@ -311,7 +313,7 @@ function Profile() {
 
       await savePostMetadata(user.username, postId, caption, mediaUrl);
 
-      setPosts([...posts, { mediaUrl, caption, postId }]);
+      setPosts([...posts, { mediaUrl, caption, postId, fileName }]);
 
       setShowPostEditor(false);
       alert("Post saved successfully!");
@@ -331,9 +333,11 @@ function Profile() {
     }
   };
 
-  const handleDeletePost = async (postId: string, username: string) => {
+  const handleDeletePost = async (username: string, postId: string) => {
+    //loop through array and look for matching postid then when it matches, take the filename of that object
+    //that is the filename that you pass in await deletePost(user.username, postId, fileName); // Backend deletion
     try {
-      await deletePost(postId, user.username); // Backend deletion
+      await deletePost(user.username, postId, fileName); // Backend deletion
       setPosts((prevPosts) =>
         prevPosts.filter((post) => post.postId !== postId)
       ); // Local state update
@@ -369,192 +373,9 @@ function Profile() {
   };
 
   return (
-    <div className={`profile-container ${sidebarOpen ? "sidebar-open" : ""}`}>
-      {/* Sidebar Toggle Button */}
-      <div className="sidebar-toggle" onClick={toggleSidebar}>
-        <div className={`toggle-lines ${sidebarOpen ? "open" : ""}`}>
-          &#9776;
-        </div>
-      </div>
-
-      {/* Sidebar */}
-      <div className="sidebar">
-        <h2></h2>
-        <ul>
-          <li>
-            <Link to="/create-events" onClick={handleEventsLink}>
-              Create Event
-            </Link>
-          </li>
-          <li>
-            <Link to="/join-events" onClick={handleJoinEventsLink}>
-              Join Events{" "}
-            </Link>
-          </li>
-          <li>
-            <a href="#">Settings</a>
-          </li>
-          <li>
-            <Link to="/Privacy">Privacy Settings</Link>
-          </li>
-          <li>
-            <Link to="/Support">Support Page</Link>
-          </li>
-          <li>
-            <Link to="/Login" onClick={handleLogout}>
-              Log out
-            </Link>{" "}
-          </li>
-        </ul>
-      </div>
-
-      {profilePicUrl && (
-        <div className="profile-picture-right">
-          <label htmlFor="profile-pic" onClick={handleProfilePicChange}>
-            <img
-              src={profilePicUrl || "default-profile-picture-url"}
-              alt="Profile"
-              className="profile-pic"
-            />
-          </label>
-          <input
-            ref={profilePicInputRef}
-            type="file"
-            id="profile-pic"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={handleProfilePicInputChange}
-          />
-          <div className="user-details">
-            <p className="user-name">{user.first_name}</p>
-            <p className="user-username">@{user.username}</p>
-            <button
-              className="add-button"
-              onClick={handleAddButton}
-              style={{ display: addButtonDisplay ? "block" : "none" }}
-            >
-              Add Friend
-            </button>
-            <button
-              className="remove-button"
-              onClick={handleRemoveButton}
-              style={{ display: removeButtonDisplay ? "block" : "none" }}
-            >
-              Remove Friend
-            </button>
-          </div>
-
-          {!isEditingBio && (
-            <div className="bio-display">
-              <p>{bio}</p>
-            </div>
-          )}
-
-          <div className="pencil-icon" onClick={handleBioEditToggle}>
-            &#128393;
-          </div>
-
-          {isEditingBio && (
-            <div className="bio-section">
-              <h2>Bio</h2>
-              <textarea
-                className="bio-textarea"
-                value={bio}
-                onChange={handleBioChange}
-                placeholder="Type your bio here"
-                maxLength={maxCharacterLimit}
-              />
-              <div className="char-counter">
-                Character Count: {bio.length}/{maxCharacterLimit}
-              </div>
-              <button onClick={handleSaveBio}>Save Bio</button>
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="posts-container">
-        {posts.map((post, index) => (
-          <div key={index} className="post">
-            <img
-              src={post.mediaUrl}
-              alt="Post"
-              className="posts-container img"
-            />
-
-            <div className="post-actions">
-              <button
-                className={`love-button ${isLiked ? "liked" : ""}`}
-                onClick={() => setIsLiked(!isLiked)}
-              >
-                {isLiked ? "❤️" : "♡"}
-              </button>
-            </div>
-
-            {editingPostId === post.postId ? (
-              <>
-                <textarea
-                  value={editedCaption}
-                  onChange={(e) => setEditedCaption(e.target.value)}
-                />
-                <button onClick={() => handleSaveEditedCaption(post.postId)}>
-                  Save
-                </button>
-              </>
-            ) : null}
-            <div className="post-caption">
-              <p className="post-caption">
-                @{user.username}: {post.caption}
-              </p>
-            </div>
-            <div className="post-options">
-              <div
-                className="options-button"
-                onClick={(e) => handleShowOptions(e, post)}
-              >
-                •••
-              </div>
-              {showOptionsFor === post.postId && (
-                <div className="post-dropdown">
-                  <button
-                    onClick={() => handleDeletePost(post.postId, user.username)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-      {/* Main Content */}
-      <div className="main-content">
-        <div className="add-post-btn" onClick={() => setShowPostEditor(true)}>
-          +
-        </div>
-        {/* Post Editor Modal */}
-        {showPostEditor && (
-          <div className="post-editor-modal">
-            <button
-              className="exit-button"
-              onClick={() => setShowPostEditor(false)}
-            >
-              X
-            </button>
-            <input
-              type="file"
-              accept="image/*,video/*"
-              onChange={handleMediaFileChange}
-            />
-            <textarea
-              placeholder="Add a caption..."
-              value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-            />
-            <button onClick={handleSavePost}>Post</button>
-          </div>
-        )}
-      </div>
+    <div className="main-wrapper">
+      {" "}
+      {/* <-- This is the new wrapping div */}
       <div ref={searchContainerRef} className="search-container">
         {/* Search Bar */}
         <input
@@ -593,6 +414,195 @@ function Profile() {
             </ul>
           </div>
         )}
+      </div>
+      <div className={`profile-container ${sidebarOpen ? "sidebar-open" : ""}`}>
+        {/* Sidebar Toggle Button */}
+        <div className="sidebar-toggle" onClick={toggleSidebar}>
+          <div className={`toggle-lines ${sidebarOpen ? "open" : ""}`}>
+            &#9776;
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="sidebar">
+          <h2></h2>
+          <ul>
+            <li>
+              <Link to="/create-events" onClick={handleEventsLink}>
+                Create Event
+              </Link>
+            </li>
+            <li>
+              <Link to="/join-events" onClick={handleJoinEventsLink}>
+                Join Events{" "}
+              </Link>
+            </li>
+            <li>
+              <a href="#">Settings</a>
+            </li>
+            <li>
+              <Link to="/Privacy">Privacy Settings</Link>
+            </li>
+            <li>
+              <Link to="/Support">Support Page</Link>
+            </li>
+            <li>
+              <Link to="/Login" onClick={handleLogout}>
+                Log out
+              </Link>{" "}
+            </li>
+          </ul>
+        </div>
+
+        {profilePicUrl && (
+          <div className="profile-picture-right">
+            <label htmlFor="profile-pic" onClick={handleProfilePicChange}>
+              <img
+                src={profilePicUrl || "default-profile-picture-url"}
+                alt="Profile"
+                className="profile-pic"
+              />
+            </label>
+            <input
+              ref={profilePicInputRef}
+              type="file"
+              id="profile-pic"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleProfilePicInputChange}
+            />
+            <div className="user-details">
+              <p className="user-name">{user.first_name}</p>
+              <p className="user-username">@{user.username}</p>
+              <button
+                className="add-button"
+                onClick={handleAddButton}
+                style={{ display: addButtonDisplay ? "block" : "none" }}
+              >
+                Add Friend
+              </button>
+              <button
+                className="remove-button"
+                onClick={handleRemoveButton}
+                style={{ display: removeButtonDisplay ? "block" : "none" }}
+              >
+                Remove Friend
+              </button>
+            </div>
+
+            {!isEditingBio && (
+              <div className="bio-display">
+                <p>{bio}</p>
+              </div>
+            )}
+
+            <div className="pencil-icon" onClick={handleBioEditToggle}>
+              &#128393;
+            </div>
+
+            {isEditingBio && (
+              <div className="bio-section">
+                <h2>Bio</h2>
+                <textarea
+                  className="bio-textarea"
+                  value={bio}
+                  onChange={handleBioChange}
+                  placeholder="Type your bio here"
+                  maxLength={maxCharacterLimit}
+                />
+                <div className="char-counter">
+                  Character Count: {bio.length}/{maxCharacterLimit}
+                </div>
+                <button onClick={handleSaveBio}>Save Bio</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="posts-container">
+          {posts.map((post, index) => (
+            <div key={index} className="post">
+              <img
+                src={post.mediaUrl}
+                alt="Post"
+                className="posts-container img"
+              />
+
+              <div className="post-actions">
+                <button
+                  className={`love-button ${isLiked ? "liked" : ""}`}
+                  onClick={() => setIsLiked(!isLiked)}
+                >
+                  {isLiked ? "❤️" : "♡"}
+                </button>
+              </div>
+
+              {editingPostId === post.postId ? (
+                <>
+                  <textarea
+                    value={editedCaption}
+                    onChange={(e) => setEditedCaption(e.target.value)}
+                  />
+                  <button onClick={() => handleSaveEditedCaption(post.postId)}>
+                    Save
+                  </button>
+                </>
+              ) : null}
+              <div className="post-caption">
+                <p className="post-caption">
+                  @{user.username}: {post.caption}
+                </p>
+              </div>
+              <div className="post-options">
+                <div
+                  className="options-button"
+                  onClick={(e) => handleShowOptions(e, post)}
+                >
+                  •••
+                </div>
+                {showOptionsFor === post.postId && (
+                  <div className="post-dropdown">
+                    <button
+                      onClick={() =>
+                        handleDeletePost(user.username, post.postId)
+                      }
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Main Content */}
+        <div className="main-content">
+          <div className="add-post-btn" onClick={() => setShowPostEditor(true)}>
+            +
+          </div>
+          {/* Post Editor Modal */}
+          {showPostEditor && (
+            <div className="post-editor-modal">
+              <button
+                className="exit-button"
+                onClick={() => setShowPostEditor(false)}
+              >
+                X
+              </button>
+              <input
+                type="file"
+                accept="image/*,video/*"
+                onChange={handleMediaFileChange}
+              />
+              <textarea
+                placeholder="Add a caption..."
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+              />
+              <button onClick={handleSavePost}>Post</button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
