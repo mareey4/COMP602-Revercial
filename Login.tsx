@@ -1,6 +1,7 @@
 import "../Front End/Login.css";
 import { login } from "./validation.js";
 import { Link, useNavigate } from "react-router-dom";
+import Logo from "../Front End/Logo.svg";
 
 // Define the Login component.
 const Login = () => {
@@ -46,6 +47,7 @@ const Login = () => {
   return (
     <div className="h1">
       <h1>Login</h1>
+      <img src={Logo} alt="RR Logo" className="rr-logo" />
 
       <div className="wrapper">
         <form>
