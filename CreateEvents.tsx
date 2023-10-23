@@ -55,10 +55,10 @@ function CreateEvents() {
 
   // State for the created event
   const [createdEvent, setCreatedEvent] = useState<Events | null>(null);
+  const location = useLocation();
+  const user = location.state?.user;
 
   const handleProfileLink = async () => {
-    const location = useLocation();
-    const user = location.state?.user;
     navigate("/profile", { state: { user: user } });
   };
 
@@ -103,7 +103,8 @@ function CreateEvents() {
         eventDetails.date,
         eventDetails.description,
         eventDetails.location,
-        ticketID
+        ticketID,
+        selectedEventType
       );
       newEvent.eventType = selectedEventType;
       // Access Firebase database

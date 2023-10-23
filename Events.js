@@ -1,5 +1,5 @@
 class Events {
-  constructor(date, description, location, ticketID, eventType, username) {
+  constructor(date, description, location, ticketID, eventType = "", username ="") {
     this.date = date;
     this.description = description;
     this.location = location;
