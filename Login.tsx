@@ -44,35 +44,43 @@ const Login = () => {
 
   // Render the Login component.
   return (
-    <div className="wrapper">
-      <form>
-        <h1>Login</h1>
-        <div className="input-box">
-          <input type="text" name="username" placeholder="Username" required />
-        </div>
-        <div className="input-box">
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            required
-          />
-        </div>
-        <button
-          type="button"
-          id="loginButton"
-          className="btn"
-          onClick={handleLoginClick}
-        >
-          Login
-        </button>
-        <li>
-          <Link to="/create-account">Don't have an account?</Link>
-        </li>
-        <div className="forgot-links">
-          <a href="#">Forgot Username or Forgot Password</a>
-        </div>
-      </form>
+    <div className="h1">
+      <h1>Login</h1>
+
+      <div className="wrapper">
+        <form>
+          <div className="input-box">
+            <input
+              type="text"
+              name="username"
+              placeholder="Username"
+              required
+            />
+          </div>
+          <div className="input-box">
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              required
+            />
+          </div>
+          <button
+            type="button"
+            id="loginButton"
+            className="btn"
+            onClick={handleLoginClick}
+          >
+            Login
+          </button>
+          <li>
+            <Link to="/create-account">Don't have an account?</Link>
+          </li>
+          <div className="forgot-links">
+            <a href="#">Forgot Username or Forgot Password</a>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
