@@ -30,8 +30,8 @@ function Joinevents() {
   const [eventList, setEventList] = useState<Event[]>([]);
 
   const handleEventClick = async (event: Event) => {
+    console.log("Event clicked:", event);
     setSelectedEvent(event);
-
     if (user && user.email) {
       const userData = await getUserViaEmail(user.email);
 
@@ -61,6 +61,7 @@ function Joinevents() {
           location: string;
           ticketID: string;
           username: string;
+          joinedUsers?: any[];
         }[];
         for (const event of events) {
           const eventInstance = new Events(
@@ -69,7 +70,8 @@ function Joinevents() {
             event.location,
             event.ticketID,
             eventType,
-            event.username
+            event.username,
+            event.joinedUsers || []
           );
           eventList.push(eventInstance);
         }
