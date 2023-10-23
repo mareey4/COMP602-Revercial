@@ -11,11 +11,29 @@ import {
   validateDescription,
   isFutureDate,
 } from "./validation";
+import Events from "./Events";
 
 function CreateEvents() {
   const navigate = useNavigate();
+
   // State for sidebar toggle
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const eventChoices = [
+    "Gala",
+    "Meeting",
+    "Networking",
+    "Non-Profit Event",
+    "Open House",
+    "Party",
+    "Professional Event",
+    "Reunion",
+    "Sporting Event",
+    "Trip",
+    "Wedding",
+    "Workshop",
+    "Other",
+  ];
 
   // Function to toggle the sidebar
   const toggleSidebar = () => {
@@ -35,27 +53,14 @@ function CreateEvents() {
   const [continueButtonDisabled, setContinueButtonDisabled] = useState(true); // State for disabling the "Continue" button
   const [addressValid, setAddressValid] = useState(true);
 
+  // State for the created event
+  const [createdEvent, setCreatedEvent] = useState<Events | null>(null);
+  const location = useLocation();
+  const user = location.state?.user;
+
   const handleProfileLink = async () => {
-    const location = useLocation();
-    const user = location.state?.user;
     navigate("/profile", { state: { user: user } });
   };
-
-  const eventChoices = [
-    "Gala",
-    "Meeting",
-    "Networking",
-    "Non-Profit Event",
-    "Open House",
-    "Party",
-    "Professional Event",
-    "Reunion",
-    "Sporting Event",
-    "Trip",
-    "Wedding",
-    "Workshop",
-    "Other",
-  ];
 
   // Event type change handler
   const handleEventTypeChange = (
@@ -67,8 +72,6 @@ function CreateEvents() {
   // Event creation handler
   const handleCreateEvent = async () => {
     // Check for incomplete event details
-    console.log("Handle Create Event function called!");
-
     if (
       !eventDetails.date ||
       !eventDetails.location ||
@@ -94,21 +97,29 @@ function CreateEvents() {
 
     try {
       // Generate a unique ticket ID
-      const ticketID = await generateTicketID("Events");
+      const ticketID = await generateTicketID("Events", undefined);
 
-      const eventDetailsWithTicketID = {
-        ...eventDetails,
-        ticketID: ticketID,
-      };
-
+      const newEvent = new Events(
+        eventDetails.date,
+        eventDetails.description,
+        eventDetails.location,
+        ticketID,
+        selectedEventType
+      );
+      newEvent.eventType = selectedEventType;
       // Access Firebase database
       const db = getDatabase(fbConfig);
       const eventTypePath = selectedEventType.replace(/ /g, "_");
       const eventPath = `Events/${eventTypePath}/${ticketID}`;
       const eventRef = ref(db, eventPath);
 
+      console.log("Event Path:", eventPath);
+      console.log("Event Data:", newEvent);
       // Set event details in the database
-      set(eventRef, eventDetailsWithTicketID);
+      set(eventRef, newEvent);
+
+      // Store the created event in state
+      setCreatedEvent(newEvent);
 
       alert("Event created successfully!");
     } catch (error) {

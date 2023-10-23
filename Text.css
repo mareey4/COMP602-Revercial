@@ -1,67 +1,85 @@
-/* Styles for the .container class */
 .container {
+  height: auto;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  text-align: left;
-  font-size: 18px;
-  margin: 0 auto;
-  width: 500px;
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  position: relative;
+  top: 20px;  /* To move the box slightly downwards for a more centered look */
 }
 
-/* Styles for h1 elements */
-h1 {
-  font-size: 14px;
-  margin-bottom: 20px;
-  color: white;
-  text-align: left;
+.container h1 {
+  color: #293728;
+  margin-top: 20px;
+  margin-bottom: 40px;
+  margin-top: 0px;
+  font-size: 50px; /* Bigger font size for the title */
 }
 
-/* Styles for label elements */
+.rr-logo {
+  width: 138px;  
+  height: 200px; 
+  margin-bottom: 20px; 
+  position: absolute;
+  top: 20px;
+  left: 30px;
+}
+
 label {
-  display: block;
-  color: white;
+  width: 100%;
   margin-bottom: 10px;
-  width: 300px;
+  font-size: 16px;
+  color: 293728;
 }
 
-/* Styles for input elements of various types */
 input[type="text"],
 input[type="date"],
 input[type="email"],
 input[type="password"] {
-  width: 100%;
+  width: 92%;
   padding: 10px;
-  margin-bottom: 10px;
   border: 1px solid #ccc;
-  box-sizing: border-box; 
+  border-radius: 5px;
+  font-size: 14px;
+  
 }
 
-/* Styles for the .create-button class */
-.create-button {
-  background-color: #007bff;
-  color: white;
+.create-button-container {
+  display: flex;
+  justify-content: center;  /* Horizontally center the content */
+  align-items: center;      /* Vertically center the content */
+  padding: 20px 0;  
+}
+
+.container .create-button-container .create-button {
+  background-color: #293728;
+  color: white;           /* Adjusted the color to white for better contrast with the background */
   border: none;
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
-}
-
-/* Styles for the button when hovered */
-.create-button:hover {
-  background-color: #0056b3;
-}
-
-/* Styles for paragraph elements */
-p {
-  color:white;
+  font-size: 16px;
   margin-top: 10px;
-  font-size: 14px;
+  margin-bottom: 0px;
+  transition: transform 0.3s ease;  /* For a smoother color transition on hover */
+}
+.container .create-button-container .create-button:hover {
+  transform: translateY(-5px);
 }
 
-/* Styles for links within paragraphs */
-p a {
+.password-requirements,
+.login-link {
+  color: black;
+  font-size: 14px;
+  margin-bottom: 0px;
+}
+
+.login-link a {
+  text-decoration: underline;
   color: #007bff;
 }

@@ -1,0 +1,28 @@
+* {
+    margin: 1;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.privacy-option__description {
+    margin-bottom: 10px;
+}
+
+.privacy-option {
+    border-bottom: 2px solid #ddd; 
+    padding-bottom: 20px;
+}
+
+.privacy-line {
+    border-top: 1px soild #ddd;
+    margin: 20px 0;
+}
+
+.privacy-container {
+    width: 80%;
+    margin: 0 auto;
+}
+
+.privacy-option__description {
+    margin-bottom: 10px;
+}

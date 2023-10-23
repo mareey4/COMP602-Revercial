@@ -1,11 +1,11 @@
-/* Apply a basic reset to remove default margins and paddings on all elements */
+/* General Resets */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
 }
 
-/* Center the content vertically and horizontally on the page */
 body {
     display: flex;
     justify-content: center;
@@ -13,66 +13,93 @@ body {
     min-height: 100vh;
 }
 
-/* Define a container for the login form with a fixed width */
 .wrapper {
     width: 420px;
+    background-color: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0px 10px 20px rgba(0,0,0,0.1); /* subtle shadow */
 }
 
-/* Style the heading inside the container */
-.wrapper h1 {
-    font-size: 36px; 
-    text-align: center;
+.rr-logo {
+    width: 138px;  
+    height: 200px; 
+    margin-bottom: 20px; 
+    position: absolute;
+    top: 20px;
+    left: 30px;
+  }
+
+.h1 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
-/* Style the input boxes within the form */
+
 .wrapper .input-box {
     position: relative;
     width: 100%;
     height: 50px;
-    margin: 30px 0;
+    margin: 20px 0;
 }
 
 .input-box input {
     width: 100%;
     height: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    border: 2px solid rgba(0, 0, 0, 0.2); 
-    border-radius: 40px;
-    padding: 10px 20px;
+    background: white;
+    border: 1px solid #e0e0e0; /* subtle border */
+    border-radius: 10px;
+    padding: 10px 20px;  /* Ensure consistent padding */
     font-size: 16px;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.1); /* subtle input shadow */
+    appearance: none;        /* Reset browser-specific styling */
+    -webkit-appearance: none; /* For Safari and Chrome */
+    -moz-appearance: none;    /* For Firefox */
+    box-sizing: border-box;  /* Consistent box-sizing */
 }
-
-/* Style the placeholder text in the input fields */
+.input-box input[type="text"], 
+.input-box input[type="password"] {
+    width: 92%;
+}
 .input-box input::placeholder {
-    color: white;
+    color: #a0a0a0; /* light gray placeholder text */
 }
 
-/* Style the login button */
 .wrapper .btn {
-    width: 35%;
-    height: 35px;
+    display: block; /* take up the full width */
+    margin: 20px auto; /* centering the button */
+    width: 100%;
+    height: 50px;
+    background-color: #293728; /* green button */
     border: none;
     outline: none;
-    border-radius: 40px;
-    box-shadow: 0 0 10px rgb(0, 0, 0);
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 18px;
     color: white;
-    font-weight: 600;
+    transition: background-color 0.3s; /* smooth transition */
 }
 
-/* Style the "Forgot Username or Forgot Password" links */
-.wrapper .forgot-links {
-    font-size: 14.5px;
+.wrapper .btn:hover {
+    background-color: #293728; /* slightly darker green on hover */
+}
+
+.wrapper li {
+    list-style: none;
+    text-align: center;
     margin-top: 20px;
 }
 
-/* Style list items inside the container */
-.wrapper li {
-    margin-top: 20px; /* Add margin between list items */
-    list-style: none; /* Remove default list styles */
-    text-align: left;
-    width: 100%; /* Make list items take up full width */
+.wrapper li a {
+    text-decoration: underline;
+    color: #293728; /* link color same as button */
+}
+
+.wrapper .forgot-links {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
 }

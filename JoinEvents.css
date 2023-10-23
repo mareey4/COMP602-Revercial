@@ -1,0 +1,156 @@
+.popup-container {
+  width: 60vw;
+  height: 60vh;
+  top: 20vh;
+  left: 21.6vw;
+  background-color: lightgrey;
+  position: absolute;
+  box-shadow: 5px black;
+  border-radius: 2%;
+  padding: 2% 4%;
+}
+
+.popup-form {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column; 
+}
+
+.popup-close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 10px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.popup-join-button {
+align-self: center;  
+position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: 10px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: left;
+  font-size: 18px;
+  margin: 0 auto;
+  width: 500px;
+}
+
+h1 {
+  font-size: 14px;
+  margin-bottom: 20px;
+  color: white;
+  text-align: left;
+}
+  
+  ul {
+    list-style-type: none; 
+    padding: 0; 
+  }
+  
+  li {
+    margin-bottom: 20px;
+    background-color: #fff; 
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  h2 {
+    color: #444;
+  }
+  
+  p {
+    color: #666; 
+  }
+  .event-grid h1 {
+    text-align: center;
+    margin: 20px 0;
+  }
+
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px; 
+  margin-top: 80px;  
+}
+
+.event {
+  border: 1px solid #ddd;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+  cursor:pointer;
+}
+
+.event:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+.event-image img {
+  max-width: 100%;
+  height: auto;
+}
+
+.event-details h3 {
+  font-size: 16px;
+  margin: 10px 0;
+}
+
+.joined-users {
+  display: flex;
+  flex-direction: column;
+
+  align-items: flex-end; 
+
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.joined-user-pic {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%; 
+  object-fit: cover; 
+}
+
+.joined-user {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.joined-user img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.joined-users h3 {
+  align-self: flex-end;
+  margin-bottom: 10px; 
+}
+
+.leave-event-btn {
+  background-color: #e74c3c; 
+  color: #ffffff; 
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  margin-left: 10px; 
+  cursor: pointer;
+  transition: background-color 0.3s;
+}

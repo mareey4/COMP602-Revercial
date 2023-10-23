@@ -1,8 +1,10 @@
-import { getDatabase, ref as databaseRef, get, set, onValue, remove, child } from 'firebase/database';
-import { getStorage, uploadBytes, getDownloadURL, ref as storageRef } from 'firebase/storage';
+import { getDatabase, ref, ref as databaseRef, get, set, onValue, remove, child, update } from 'firebase/database';
+import { getStorage, uploadBytes, getDownloadURL, ref as storageRef, deleteObject } from 'firebase/storage';
 import { fbConfig } from './firebase';
 import User from './user';
+import FriendRequest from '../Back End/friendRequest';
 
+// Saves the user data to the database
 export async function saveUserData(newUser) {
     const db = getDatabase(fbConfig);
     const sanitizedEmail = newUser.email.replaceAll(".",",");
@@ -15,7 +17,51 @@ export async function saveUserData(newUser) {
         Username: newUser.username,
         Password: newUser.password,
         Login_Status: newUser.loginStatus,
-        Profile_Pic: newUser.profilePic
+        Profile_Pic: newUser.profilePic,
+        Bio: newUser.bio
+    });
+
+     await createFriendsList(sanitizedEmail);
+    await createInbox(sanitizedEmail);
+}
+
+ async function createFriendsList(email) {
+    const db = getDatabase(fbConfig);
+    let sanitizedEmail;
+
+    if(email.includes(".")) {
+        sanitizedEmail = email.replaceAll(".", ",");
+    } else {
+        sanitizedEmail = email;
+    }
+
+    const refFriends = databaseRef(db, 'Friends/' + sanitizedEmail);
+
+    set(refFriends, {
+        Holder: "Do not remove"
+    });
+}
+
+async function createInbox(email) {
+    const db = getDatabase(fbConfig);
+    let sanitizedEmail;
+
+    if(email.includes(".")) {
+        sanitizedEmail = email.replaceAll(".", ",");
+    } else {
+        sanitizedEmail = email;
+    }
+
+    const refInbox = databaseRef(db, 'Inbox/' + sanitizedEmail);
+
+    set(refInbox, {
+        Holder: "Do not remove"
+    });
+
+    const refFriendRequests = databaseRef(db, 'Inbox/' + sanitizedEmail + "/Friend_Requests");
+
+    set(refFriendRequests, {
+        Holder: "Do not remove"
     });
 }
 
@@ -29,30 +75,113 @@ export async function saveSupportInfo(query) {
         Description: query.description,
         Files: query.fileNames
     });
-}
+} 
 
 export async function saveSupportAttachments(subject, ticketID, file) {
     const storage = getStorage(fbConfig);
     const refSupport = storageRef(storage, 'Support/' + subject + '/' + ticketID + '/' + file.name);
 
     await uploadBytes(refSupport, file);
+} 
+
+export async function savePostAttachment(username, postID, file) {
+    const storage = getStorage(fbConfig);
+    const refPost = storageRef(storage, 'Posts/' + username + '/' + postID + '/' + file.name);
+
+    await uploadBytes(refPost, file);
+    return getDownloadURL(refPost);
 }
 
-export async function setProfilePic(email, file) {
+export async function savePostMetadata(username, postId, caption, mediaUrl) {
+    const db = getDatabase(fbConfig);
+    const postRef = databaseRef(db, 'Posts/' + username + '/' + postId);
+
+    const postData = {
+        caption: caption,
+        mediaUrl: mediaUrl,
+        datePosted: new Date().toISOString() // Saving the post date in ISO format
+    };
+
+    await set(postRef, postData);
+}
+
+
+ export async function checkExistingTicketID(ticketID) {
+    const db = getDatabase(fbConfig);
+    const topicOptions = [
+        'Account Issues',
+        'Privacy and Security',
+        'Content Management',
+        'Technical Problems',
+        'Messaging and Communication',
+        'Feedback and Suggestions',
+        'Report Technical Glitches',
+        'Other'
+    ];
+
+    const promises = topicOptions.map(async (topicOptions) => {
+        const refSubject = databaseRef(db, 'Support/' + topicOptions);
+        const refTicket = child(refSubject, ticketID);
+        const snapshot = await get(refTicket);
+        return snapshot.exists();
+    });
+
+    const result = await Promise.all(promises);
+    const validID = result.some((exists) => exists);
+
+    return validID;
+}
+
+export async function setProfilePic(user, file) {
     const storage = getStorage(fbConfig);
-    const refUser = storageRef(storage, 'Users/' + email + '/' + 'ProfilePic/' + file.name);
+    let sanitizedEmail;
+    if(user.email.includes(".")) {
+        sanitizedEmail = user.email.replaceAll(".",",");
+    } else {
+        sanitizedEmail = user.email;
+    }
+    const refUser = storageRef(storage, 'Users/' + sanitizedEmail + '/' + 'ProfilePic/' + file.name);
 
     await uploadBytes(refUser, file);
+
+    let sanitizedPFP;
+
+    if(file.name.includes(".")) {
+        sanitizedPFP = file.name.replaceAll(".",",");
+    } else {
+        sanitizedPFP = file.name;
+    }
+
+    user.profilePic = sanitizedPFP;
+
+    await saveUserData(user);
 }
 
+// Gets the profile picture for the given user from storage
 export async function getProfilePic(email, filename) {
     const storage = getStorage(fbConfig);
+    let sanitizedEmail;
+    let sanitizedFileName;
+
+    if(email.includes(".")) {
+        sanitizedEmail = email.replaceAll(".", ",");
+    } else {
+        sanitizedEmail = email;
+    }
+
+    if(filename.includes(",")) {
+        sanitizedFileName = filename.replaceAll(",", ".");
+    } else {
+        sanitizedFileName = filename;
+    }
+
     let refUser;
 
+    // Checks if user has a uploaded profile picture, otherwise loads the default picture
     if(filename === "Null") {
         refUser = storageRef(storage, 'Defaults/Default-PFP.jpg');
     } else {
-        refUser = storageRef(storage, 'Users/' + email + '/ProfilePic/' + filename);
+        refUser = storageRef(storage, 'Users/' + sanitizedEmail + '/ProfilePic/' + sanitizedFileName);
     }
     
     return new Promise(async (resolve) => {
@@ -68,15 +197,185 @@ export async function getProfilePic(email, filename) {
     });
 }
 
+// Gets the profile pictures for the filtered users from storage
+export async function getFilteredUsersPFP(filtered) {
+    const pfpURLS = [];
+
+    return new Promise(async (resolve) => {
+        for (const user of filtered) {
+            const url = await getProfilePic(user.email, user.profilePic);
+            pfpURLS.push(url);
+        }
+
+        resolve(pfpURLS);
+        return;
+    });
+} 
+
+// Sends a friend request to a user's inbox
+// Saves a friend request message in the target recipent's inbox in the database
+async function sendFriendRequest(recipient, sender) {
+    const db = getDatabase(fbConfig);
+    let sanitizedRecipient;
+    let sanitizedSender;
+
+    if(recipient.email.includes(".")) {
+        sanitizedRecipient = recipient.email.replaceAll(".",",");
+    } else {
+        sanitizedRecipient = recipient.email;
+    }
+    
+    if(sender.email.includes(".")) {
+        sanitizedSender = emailSender.email.replaceAll(".",",");
+    } else {
+        sanitizedSender = sender.email;
+    }
+
+    const refFriendRequests = databaseRef(db, 'Inbox/' + sanitizedRecipient + '/Friend_Requests/' + sanitizedSender);
+    const currentDate = new Date();
+    const currentDateString = currentDate.getDate() + "-" + currentDate.getMonth() + "-" + currentDate.getFullYear();
+    const requestMsg = sender.username + " would like to add you as a friend.";
+    let addStatus = -1;
+
+    set(refFriendRequests, {
+        Message: requestMsg,
+        Status: addStatus,
+        Date: currentDateString
+    });
+}
+
+// Gets the user's friends list from the database
+export async function getFriendsList(email) {
+    const db = getDatabase(fbConfig);
+    let sanitizedEmail = "";
+
+    if (email.includes(".")) {
+        sanitizedEmail = email.replaceAll(".", ",");
+    } else {
+        sanitizedEmail = email;
+    }
+
+    const refFriends = databaseRef(db, 'Friends/' + sanitizedEmail);
+    const friends = [];
+
+    return new Promise((resolve) => {
+        onValue(refFriends, async (snapshot) => {
+            const data = snapshot.val();
+    
+            for (let ids in data) {
+                if (ids !== "Holder") {
+                    const refUser = databaseRef(db, 'Friends/' + sanitizedEmail + '/' + ids);
+
+                    onValue(refUser, async (snapshot) => {
+                        const userData = snapshot.val();
+                        const username = userData.Username;
+                        const user = await getUserViaUsername(username);
+
+                        friends.push(user);
+                    });
+                }
+            }
+        });
+        
+        resolve(friends);
+        return;
+    });
+}
+
+export async function checkFriends(currentEmail, targetEmail) {
+    const friends = await getFriendsList(currentEmail);
+    let sanitizedTarget = "";
+
+    if (targetEmail.includes(".")) {
+        sanitizedTarget = targetEmail.replaceAll(".", ",");
+    } else {
+        sanitizedTarget = targetEmail;
+    }
+
+    return new Promise((resolve) => {
+        for (const user of friends) {
+            if (user.email === sanitizedTarget) {
+                resolve(true);
+                return;
+            }
+        }
+
+        resolve(false);
+        return;
+    });
+}
+
+// Adds the target user to the current user's friends list
+export async function addFriend(currentUser, targetUser) {
+    const db = getDatabase(fbConfig);
+    let sanitizedCurrentEmail;
+    const username = targetUser.username;
+
+    if (currentUser.email.includes(".")) {
+        sanitizedCurrentEmail = currentUser.email.replaceAll(".", ",");
+    } else {
+        sanitizedCurrentEmail = currentUser.email;
+    }
+
+    await sendFriendRequest(targetUser, currentUser);
+    const randTicket = await generateTicketID("Profile");
+    const refFriends = databaseRef(db, 'Friends/' + sanitizedCurrentEmail + "/" + randTicket);
+
+    return new Promise(() => {
+        set(refFriends, {
+            Username: username
+        });
+
+        return;
+    });
+}
+
+
+// Removes the target user from the current user's friends list
+export async function removeFriend(currentUser, targetUser) {
+    const db = getDatabase(fbConfig);
+    let sanitizedCurrentEmail;
+
+    if (currentUser.email.includes(".")) {
+        sanitizedCurrentEmail = currentUser.email.replaceAll(".", ",");
+    } else {
+        sanitizedCurrentEmail = currentUser.email;
+    }
+
+    const refFriends = databaseRef(db, 'Friends/' + sanitizedCurrentEmail);
+
+    return new Promise(() => {
+        onValue(refFriends, async (snapshot) => {
+            const data = snapshot.val();
+    
+            for(const ticket in data) {
+                if(ticket !== "Holder") {
+                    const ticketData = data[ticket];
+                    const username = ticketData.Username;
+                    
+                    if(targetUser.username === username) {
+                        remove(databaseRef(db, 'Friends/' + sanitizedCurrentEmail + "/" + ticket));
+                        break;
+                    }
+                }
+            }
+        });
+
+        return;
+    });
+}
+
 export async function getUserViaEmail(userEmail) {
     const db = getDatabase(fbConfig);
     const refEmail = databaseRef(db, 'Users');
     const sanitizedEmail = userEmail.replaceAll(".",",");
-    
+    console.log("Sanitized Email used for query:", sanitizedEmail);
+
     return new Promise((resolve) => {
         onValue(refEmail, (snapshot) => {
             const dataEmail = snapshot.val();
-
+            console.log("Data retrieved based on email:", dataEmail);
+            
             for(const email in dataEmail){
                 if(email === sanitizedEmail){
                     const userData = dataEmail[email];
@@ -89,7 +388,8 @@ export async function getUserViaEmail(userEmail) {
                         email,
                         userData.Password,
                         userData.Login_Status,
-                        userData.Profile_Pic
+                        userData.Profile_Pic,
+                        userData.Bio
                     );
 
                     resolve(user);
@@ -123,7 +423,8 @@ export async function getUserViaUsername(username) {
                         email,
                         userData.Password,
                         userData.Login_Status,
-                        userData.Profile_Pic
+                        userData.Profile_Pic,
+                        userData.Bio
                     );
 
                     resolve(user);
@@ -136,6 +437,7 @@ export async function getUserViaUsername(username) {
         });
     });
 }
+
 
 export async function deleteAccount(user) {
     const db = getDatabase(fbConfig);
@@ -193,7 +495,10 @@ export async function getAllUsers() {
                 userData.Username,
                 userData.DOB,
                 email,
-                userData.Password
+                userData.Password,
+                userData.Login_Status,
+                userData.Profile_Pic,
+                userData.Bio
             );
 
             users.push(user);
@@ -335,6 +640,7 @@ export async function validatePassword(password) {
     const uppercase = /[A-Z]/;
     const lowercase = /[a-z]/;
     const digit = /[0-9]/;
+    const charsAndSpaces = /[^A-Za-z0-9]/;
 
     return new Promise((resolve) => {
         if(password.length >= 8) {
@@ -366,27 +672,87 @@ export function getCurrentDate() {
     }
   
     return `${year}-${month}-${day}`;
-}
+  }
 
 export function isValidDate(dateString) {
     const selectedDate = new Date(dateString);
     const currentDate = new Date();
     return selectedDate >= currentDate;
-}
+  }
   
-export function validateAddress(address) {
+  export function validateAddress(address) {
     const addressRegex = /^[a-zA-Z0-9\s,-]+$/;
     return addressRegex.test(address);
-}
+  }
   
-export function validateDescription(description) {
-    return description.length <= 500;
-}
+  export function validateDescription(description) {
+    return description.length <= 100;
+  }
 
-export function isFutureDate(dateString) {
+  export async function saveUserBio(email, bio) {
+    const db = getDatabase(fbConfig);
+    const sanitizedEmail = email.replaceAll(".",",");
+    const userRef = ref(db, 'Users/' + sanitizedEmail); 
+  
+    try {
+      await update(userRef, {
+        Bio: bio
+      });
+      console.log('Bio saved successfully');
+    } catch (error) {
+      console.error('Error saving bio:', error);
+      throw error; 
+    }
+  }
+
+  export function isFutureDate(dateString) {
     const selectedDate = new Date(dateString);
     const currentDate = new Date();
     console.log("Selected Date:", selectedDate);
     console.log("Current Date:", currentDate);
     return selectedDate >= currentDate;
+}
+
+export async function deletePostMediaFromStorage(username, postId, fileName) {
+    console.log("Username:", username); // Logging for debugging
+    console.log("Post ID:", postId); // Logging for debugging
+console.log(fileName);
+    const storage = getStorage(fbConfig);
+    const postMediaRef = storageRef(storage, `Posts/${username}/${postId}/${fileName}`);
+    await deleteObject(postMediaRef);  // This deletes the entire directory for the post, removing all media associated with it.
+}
+
+export async function deletePost(username, postId, fileName) {
+    await deletePostMediaFromStorage(username, postId, fileName);
+    
+    const db = getDatabase(fbConfig);
+    const postRef = ref(db, `Posts/${username}/${postId}/${fileName}`);
+    await remove(postRef);
+}
+
+
+export async function getPostsForUser(username) {
+    const db = getDatabase(fbConfig);
+    const postRef = databaseRef(db, 'Posts/' + username);
+    let postsArray = [];
+
+    try {
+        const snapshot = await get(postRef);
+        const postsData = snapshot.val();
+
+        if (postsData) {
+            for (const postId in postsData) {
+                postsArray.push({
+                    mediaUrl: postsData[postId].mediaUrl,
+                    caption: postsData[postId].caption,
+                    postId: postId,
+                    fileName: postId.fileName
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Error fetching posts:", error);
+    }
+
+    return postsArray;
 }
