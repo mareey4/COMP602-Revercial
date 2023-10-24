@@ -43,7 +43,8 @@ Revercial is a groundbreaking platform built to foster real-world connections an
 
 * [![React][React.js]][React-url]
 * [![Firebase][Firebase.js]][Firebase-url]
-
+* [![HTML][HTML.js][HTML-url]]
+* [![CSS][CSS.js][CSS-url]]
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -83,3 +84,7 @@ This is an example of how to list things you need to use the software and how to
 [React-url]: https://reactjs.org/
 [Firebase.js]: https://img.shields.io/badge/Firebase-9.x-orange
 [Firebase-url]: https://firebase.google.com/
+[HTML]: https://img.shields.io/badge/HTML-20232A?style=for-the-badge&logo=html5&logoColor=E34F26
+[HTML-url]: https://developer.mozilla.org/en-US/docs/Web/HTML
+[CSS]: https://img.shields.io/badge/CSS-20232A?style=for-the-badge&logo=css3&logoColor=1572B6
+[CSS-url]: https://developer.mozilla.org/en-US/docs/Web/CSS
