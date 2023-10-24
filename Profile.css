@@ -1,9 +1,27 @@
-/* CSS for Profile.tsx */
+.main-wrapper {
+  display: flex;               /* Convert the wrapper into a flex container */
+  justify-content: center;     /* Center the main content horizontally */
+  align-items: flex-start;     /* Align the content to the top */
+  padding: 20px;               /* Provide some spacing around the edges */
+  height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;   /* Allow scrolling if content overflows */
+}
 
 /* Container styles */
+.profile-picture-right {
+  width: 300px;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+}
+
 .profile-container {
-  display: flex;
-  height: 100vh;
+  position: relative;
 }
 
 /* Sidebar styles */
@@ -11,7 +29,6 @@
   width: 250px;
   background-color: #85C25C;
   color: #fff;
-  padding: 20px;
   position: fixed;
   left: -250px; /* Initially, push it to the left side */
   top: 0;
@@ -20,8 +37,23 @@
   transition: left 0.3s ease; /* Transition left property */
 }
 
+/* Open sidebar when the sidebar-open class is applied */
 .profile-container.sidebar-open .sidebar {
   left: 0;
+}
+
+.pencil-icon {
+  position: fixed;
+  font-size: 20px;
+  top: 20px;
+  right: 25px; /* adjust based on your preference */
+  cursor: pointer;
+  transition: left 0.3s ease;
+}
+
+.pencil-icon:hover {
+  transform: scale(1.2); 
+
 }
 
 .sidebar h2 {
@@ -47,6 +79,11 @@
 /* Main content styles */
 .main-content {
   flex: 1;
+  max-width: 800px;            /* Set a max width for readability */
+  width: 100%;                 /* Use all available space up to max-width */
+  box-sizing: border-box;      /* Ensure padding is included in width calculations */
+  padding: 0 20px;             /* Provide horizontal padding */
+
   padding: 20px;
 }
 
@@ -58,11 +95,9 @@
 /* Sidebar Toggle Button styles */
 .sidebar-toggle {
   cursor: pointer;
-  padding: 10px;
   position: fixed;
   left: 0;
   top: 0;
-  background-color: #85C25C;
   z-index: 1;
 }
 
@@ -73,14 +108,16 @@
   flex-direction: column;
   justify-content: space-between;
   color: #fff;
-  span {
-    width: 100%;
-    height: 3px;
-    background-color: #fff;
-    transition: transform 0.3s ease;
-  }
 }
 
+.toggle-lines span {
+  width: 100%;
+  height: 3px;
+  background-color: #fff;
+  transition: transform 0.3s ease;
+}
+
+/* Animate the toggle button lines when the sidebar is open */
 .profile-container.sidebar-open .toggle-lines span:nth-child(1) {
   transform: rotate(45deg) translate(3px, 3px);
 }
@@ -93,27 +130,25 @@
   transform: rotate(-45deg) translate(3px, -3px);
 }
 
+/* Additional profile information */
 .main-content {
   flex: 1;
   padding: 20px;
-  position: relative; /* Add this */
-}
-
-.profile-info {
-  position: absolute; /* Position the profile info */
-  top: 20px; /* Adjust the top position as needed */
-  left: 690px; /* Adjust the right position as needed */
-  display: flex;
-  align-items: center;
-  font-size: 18px;
-  color: #fff;
+  position: relative;
 }
 
 .profile-pic {
-  width: 60px; /* Set the size of the circular profile picture */
-  height: 60px; /* Set the size of the circular profile picture */
-  border-radius: 50%; /* Make it circular */
-  margin-right: 10px; /* Add spacing between the picture and text */
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  margin-right: 10px;
+  transition: transform 0.3s ease-in-out; 
+  cursor: pointer;
+}
+
+.profile-pic:hover {
+  transform: scale(1.2); 
+
 }
 
 .user-details {
@@ -131,8 +166,165 @@
   margin: 0;
 }
 
-.add-button {
+.add-post-btn {
+  width: 50px;
+  height: 50px;
+  background-color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  transition: transform 0.3s ease-in-out; 
+}
+.add-post-btn:hover {
+  transform: scale(1.2); 
+}
+
+/* Post editor modal */
+.post-editor-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  padding: 20px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+}
+
+.posts-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 5px;
+  background-color: white;
+  padding: 15px;
+  margin-top: 20px;
+
+  width: 700px;
+  overflow: hidden;
+}
+
+.post {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.posts-container img {
+width:100%;  
+height: fit-content;
+  object-fit: contain;
+}
+
+.love-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  margin: 5px 0;
   position: absolute;
+  padding: 5px 10px;
+  bottom: 10px;
+  right:10px
+}
+
+.liked {
+  color: red;
+}
+
+.post-caption {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding-left: 10px;
+}
+
+.post-dropdown {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ddd;
+  width: 100px;
+  border-radius: 5%;
+
+}
+
+.post-dropdown button {
+  background: none;
+  border: none;
+  width: 100%;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.exit-button {
+  background-color: #eee;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.exit-button:hover {
+  background-color: #ddd;
+}
+
+.bio-section {
+  position: fixed;
+  top: calc(20px + 60px + 10px); /* original top of profile-pic + height of profile-pic + a little margin */
+  right: 20px; /* same as profile-picture-right */
+  width: 250px; /* adjust this based on your requirement */
+  background-color: #fff; /* Adding a background for clarity */
+  padding: 15px; /* Give it some padding for aesthetics */
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2); /* Optional shadow for aesthetics */
+  z-index: 2; /* to ensure it overlays other content if needed */
+}
+
+.edit-button {
+  position: absolute;
+  padding: 5px 10px;
+  top: -8px;
+  right: 58px; /* Adjust this value based on your preference and the space needed */
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 24px; /* Adjust size if needed */
+  color: #333; /* Adjust color if needed */
+}
+
+.edit-button:hover {
+  color: #555; /* Darker shade for hover effect. Adjust if needed */
+}
+
+.options-button {
+  position: absolute;
+  padding: 5px 10px;
+  top: -2px;
+  right: 15px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 24px; /* Adjust size if needed */
+  color: #333; /* Adjust color if needed */
+}
+
+.options-button:hover {
+  color: #555; /* Darker shade for hover effect. Adjust if needed */
+}
+
+.add-button {
+
   left: 10px;
   height: 30px;
   width: 150px;
@@ -142,7 +334,7 @@
 }
 
 .remove-button {
-  position: absolute;
+
   left: 10px;
   height: 30px;
   width: 150px;
@@ -151,42 +343,11 @@
   text-align: center;
 }
 
-.friends-container {
-  position: absolute;
-  left: 450px;
-  margin-top: 30px;
-}
-
-.friends-section {
-  margin-top: 20px;
-}
-
-.friends-list {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.friend-entry {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-right: 20px;
-  margin-bottom: 20px;
-}
-
-.friend-pic {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  margin-bottom: 5px;
-}
-
-.friend-username {
-  font-size: 16px;
-  text-align: center;
-}
-
 .search-container {
+  position: fixed;   
+  top: 20px;      
+  left: 0px;       /* 20px from the right */
+  z-index: 10;
   position: relative;
   margin-top: 10px;
 }
@@ -250,4 +411,137 @@
 
 .search-result-details p {
   margin: 0; /* Remove margin on the paragraph for proper alignment */
+}
+
+.friends-display {
+  position: absolute; /* Position the search results dropdown */
+  top: 100%; /* Position it below the search bar */
+  left: 0;
+  width: 250px;
+  background-color: gray;
+  border: 1px solid #ccc;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1;
+}
+
+.friends-display ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.friends-display li {
+  height: 40px;
+  width: 232px;
+  display: flex;
+  align-items: normal;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.friends-display li:last-child {
+  border-bottom: none;
+}
+
+.friends-entry {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.friends-entry:last-child {
+  border-bottom: none;
+}
+
+.friends-pic {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.friends-details {
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.friends-details p {
+  margin: 0; /* Remove margin on the paragraph for proper alignment */
+}
+
+.chat-box {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 300px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.chat-messages {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.scrollable-messages {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.sent-message {
+  background-color: #007BFF;
+  color: #FFFFFF;
+  text-align: right;
+  border-radius: 10px;
+  padding: 8px;
+  margin: 8px 0;
+  max-width: 70%;
+  align-self: flex-end;
+}
+
+.received-message {
+  background-color: #E0E0E0;
+  color: #000000;
+  text-align: left;
+  border-radius: 10px;
+  padding: 8px;
+  margin: 8px 0;
+  max-width: 70%;
+  align-self: flex-start;
+}
+
+.chat-input {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-right: 10px;
+}
+
+.chat-input button {
+  background-color: #85C25C;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.chat-input button:hover {
+  background-color: #5D8B3E;
 }
