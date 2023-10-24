@@ -54,7 +54,18 @@ Revercial is a groundbreaking platform built to foster real-world connections an
 * [![Jest][Jest.js]][Jest-url]
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Dependencies
 
+Below is a list of the main dependencies and technologies used in this project:
+
+- [React](https://reactjs.org/): A JavaScript library for building user interfaces.
+- [Firebase](https://firebase.google.com/): A platform for building web and mobile applications.
+- [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML): HyperText Markup Language for structuring web content.
+- [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS): Cascading Style Sheets for styling web content.
+- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/): A utility for testing React components.
+- [Jest](https://jestjs.io/): A JavaScript testing framework.
+
+You can find the specific versions of these dependencies in our `package.json` file.
 
 <!-- GETTING STARTED -->
 ## Getting Started
