@@ -6,6 +6,7 @@ import Events from "./Events";
 import { getUserViaEmail, getProfilePic } from "./validation";
 import "../Front End/JoinEvents.css";
 
+// Define types for Event and UserProfile
 type Event = InstanceType<typeof Events>;
 type UserProfileType = {
   profilePic?: string;
@@ -13,6 +14,7 @@ type UserProfileType = {
 };
 
 function Joinevents() {
+  // State variables
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showPopUp, setShowPopUp] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>();
@@ -24,11 +26,14 @@ function Joinevents() {
 
   console.log("Location object:", location);
   console.log("User:", user);
+  // Logging the user and user data when the component mounts
   useEffect(() => {
     console.log("JoinEvents mounted with user:", user);
   }, []);
+  // State to store the list of events
   const [eventList, setEventList] = useState<Event[]>([]);
 
+  // Function to handle clicking on an event
   const handleEventClick = async (event: Event) => {
     console.log("Event clicked:", event);
     setSelectedEvent(event);
@@ -46,6 +51,7 @@ function Joinevents() {
     setShowPopUp(true);
   };
 
+  // Fetch events from Firebase and store them in eventList
   useEffect(() => {
     const db = getDatabase(fbConfig);
     const eventRef = ref(db, `Events`);
@@ -87,20 +93,24 @@ function Joinevents() {
     console.log("userProfile:", userProfile);
   }, [userProfile]);
 
+   // Function to handle user logout
   const handleLogout = () => {
     if (user) {
       user.loginStatus = false;
     }
   };
 
+  // Function to toggle the sidebar
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
+  // Function to navigate to the create events page
   const handleEventsLink = () => {
     navigate("/create-events", { state: { user: user } });
   };
 
+  // Function to navigate to the profile page
   const handleProfileLink = async () => {
     navigate("/profile", { state: { user: user } });
   };
@@ -128,10 +138,12 @@ function Joinevents() {
     }
   };
 
+  // Function to close the popup
   const closePopUp = () => {
     setShowPopUp(false);
   };
 
+  // Function to check if the user has already joined an event
   const hasUserJoinedEvent = (event: Event, username: string): boolean => {
     return event.joinedUsers.some((user) => user.username === username);
   };
@@ -173,6 +185,7 @@ function Joinevents() {
     setShowPopUp(false);
   };
 
+  // Function to navigate to the join events page
   const handleJoinEventsLink = (event: React.MouseEvent) => {
     event.preventDefault();
     console.log("Navigating to JoinEvents with user:", user);
