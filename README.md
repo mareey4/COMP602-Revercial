@@ -102,7 +102,7 @@ This is an example of how to list things you need to use the software and how to
 3. [Accessing Profile Page](#accessing-profile-page)
 4. [Using the Navbar](#using-the-navbar)
 
-[![Create Account](https://i.imgur.com/jqz2nI7.png)](https://imgur.com/jqz2nI7)
+[![Create an Account](https://i.imgur.com/jqz2nI7.png)](https://imgur.com/jqz2nI7)
 *Description: This image shows the user registration page. To create an account, fill in the required fields, including your email, username, and password, and then click the "Sign Up" button.*
 
 <!-- MARKDOWN LINKS & IMAGES -->
