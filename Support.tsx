@@ -37,6 +37,8 @@ function Support() {
     "Report Technical Glitches",
     "Other",
   ];
+
+  // States for handling inputs
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [description, setDescription] = useState("");
