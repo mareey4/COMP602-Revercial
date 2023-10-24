@@ -8,13 +8,15 @@ import {
   validatePassword,
   validateEmail,
   getUserViaUsername,
-} from "./validation";
-import React, { useState } from "react";
-import User from "./user";
-import { useNavigate, Link } from "react-router-dom";
-import Logo from "../Front End/Logo.svg";
+} from "./validation"; // Importing validation functions and other dependencies
+
+import React, { useState } from "react"; // Importing React and the useState hook
+import User from "./user"; // Importing a User class
+import { useNavigate, Link } from "react-router-dom"; // Importing navigation components from React Router
+import Logo from "../Front End/Logo.svg"; // Importing an image (logo)
 
 function Text() {
+  // State variables to manage form input values
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [dob, setDOB] = useState("");
@@ -27,24 +29,7 @@ function Text() {
 
   // Function to handle the "Create" button click
   const handleCreateClick = async () => {
-    /*     const firstName = document.querySelector(
-      'input[name="fname"]'
-    ) as HTMLInputElement;
- */
-    /* const lastName = document.querySelector(
-      'input[name="lname"]'
-    ) as HTMLInputElement;
-    const dob = document.querySelector('input[name="dob"]') as HTMLInputElement;
-    const email = document.querySelector(
-      'input[name="email"]'
-    ) as HTMLInputElement;
-    const username = document.querySelector(
-      'input[name="username"]'
-    ) as HTMLInputElement;
-    const password = document.querySelector(
-      'input[name="password"]'
-    ) as HTMLInputElement; */
-
+    // Initialize an error message
     let errorMsg = "Error:\n";
 
     // Check if any required fields are empty
@@ -136,6 +121,8 @@ function Text() {
 
       <div className="container">
         <h1>Create an Account</h1>
+
+        {/* Input fields for user information */}
         <label>
           First Name:{" "}
           <input
@@ -165,6 +152,7 @@ function Text() {
             onChange={(e) => setDOB(e.target.value)}
           ></input>{" "}
         </label>
+
         <label>
           Email:
           <input
@@ -194,15 +182,21 @@ function Text() {
             onChange={(e) => setPassword(e.target.value)}
           ></input>{" "}
         </label>
+
+        {/* Password requirements */}
         <p className="password-requirements">
           Password must have an uppercase letter, a lowercase letter, a number,
           and be at least 8 characters long.
         </p>
+
+        {/* Link to the login page */}
         <div className="login-link">
           <p>
             Already have an account? <Link to="/login">Login here</Link>
           </p>
         </div>
+
+        {/* Create button */}
         <div className="create-button-container">
           <button className="create-button" onClick={handleCreateClick}>
             Create
