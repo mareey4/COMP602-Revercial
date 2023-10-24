@@ -33,6 +33,7 @@ type Post = {
   caption: string;
   postId: string;
   fileName: string;
+  isEditing?: boolean;
 };
 
 function Profile() {
@@ -64,7 +65,7 @@ function Profile() {
   const [showOptionsFor, setShowOptionsFor] = useState<string | null>(null);
 
   const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null);
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState<string[]>([]);
   const [fileName, setFileName] = useState("");
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editedCaption, setEditedCaption] = useState("");
@@ -72,21 +73,20 @@ function Profile() {
   // Get the user data from the location state.
   const location = useLocation();
   const user = location.state?.user;
+  const targetUser = location.state?.target;
+  const targetEmail = targetUser.email;
 
   // Sanitize email and profile picture name for fetching the profile picture.
   const unsanitizedEmail = user.email;
   const unsanitizedPFPName = user.profilePic;
 
   // Add a state variable for the user's bio
-  const [bio, setBio] = useState(user.bio || ""); // Initialize with the user's existing bio, if available
   const [isEditingBio, setIsEditingBio] = useState(false);
+  const [bio, setBio] = useState(user.bio || ""); // Initialize with the user's existing bio, if available
 
   const maxCharacterLimit = 500;
 
   const searchContainerRef = useRef(null);
-  const currentUser = location.state?.user;
-  const targetUser = location.state?.target;
-  const targetEmail = targetUser.email;
   let friends: User[];
   let pfpName = "Null";
 
@@ -108,7 +108,7 @@ function Profile() {
 
   useEffect(() => {
     async function loadFriends() {
-      friends = await getFriendsList(currentUser.email);
+      friends = await getFriendsList(user.email);
 
       if (friends.length > 0) {
         loadFriendsPFP();
@@ -148,12 +148,12 @@ function Profile() {
 
   useEffect(() => {
     async function fetchPosts() {
-      const userPosts = await getPostsForUser(user.username);
+      const userPosts = await getPostsForUser(targetUser.username);
       setPosts(userPosts);
     }
 
     fetchPosts();
-  }, [user.username]);
+  }, [targetUser.username]);
 
   useEffect(() => {
     async function fetchBio() {
@@ -172,36 +172,36 @@ function Profile() {
   };
 
   const handleAddButton = async () => {
-    const check = await checkFriends(currentUser.email, targetEmail);
-    if (currentUser.email !== targetUser.email && !check) {
-      await addFriend(currentUser, targetUser);
+    const check = await checkFriends(user.email, targetEmail);
+    if (user.email !== targetUser.email && !check) {
+      await addFriend(user, targetUser);
     }
   };
 
   useEffect(() => {
     async function updateAddButtonDisplay() {
-      const check = await checkFriends(currentUser.email, targetEmail);
-      setAddButtonDisplay(currentUser.email !== targetUser.email && !check);
+      const check = await checkFriends(user.email, targetEmail);
+      setAddButtonDisplay(user.email !== targetUser.email && !check);
     }
 
     updateAddButtonDisplay();
-  }, [currentUser.email, targetEmail]);
+  }, [user.email, targetEmail]);
 
   const handleRemoveButton = async () => {
-    const check = await checkFriends(currentUser.email, targetEmail);
-    if (currentUser.email !== targetUser.email && check) {
-      await removeFriend(currentUser, targetUser);
+    const check = await checkFriends(user.email, targetEmail);
+    if (user.email !== targetUser.email && check) {
+      await removeFriend(user, targetUser);
     }
   };
 
   useEffect(() => {
     async function updateRemoveButtonDisplay() {
-      const check = await checkFriends(currentUser.email, targetEmail);
-      setRemoveButtonDisplay(currentUser.email !== targetUser.email && check);
+      const check = await checkFriends(user.email, targetEmail);
+      setRemoveButtonDisplay(user.email !== targetUser.email && check);
     }
 
     updateRemoveButtonDisplay();
-  }, [currentUser.email, targetEmail]);
+  }, [user.email, targetEmail]);
 
   const handleSearch = async (event: ChangeEvent<HTMLInputElement>) => {
     const searchTerm = event.target.value;
@@ -240,34 +240,43 @@ function Profile() {
     }
   };
 
-  const handleProfilePicChange = () => {
-    if (profilePicInputRef.current) {
-      profilePicInputRef.current.click();
+  const handleProfilePicChange = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log("Element clicked:", e.currentTarget);
+
+    console.log("Logged-in user:", user.email);
+    console.log("Profile being viewed:", targetUser.email);
+    if (user.email == targetUser.email) {
+      if (profilePicInputRef.current) {
+        profilePicInputRef.current.click();
+      }
     }
   };
 
   const handleProfilePicInputChange = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const file = e.target.files && e.target.files[0];
+    if (user.email == targetUser.email) {
+      const file = e.target.files && e.target.files[0];
 
-    if (file) {
-      setSelectedProfilePic(file);
-      setSelectedProfilePicName(file.name);
+      if (file) {
+        setSelectedProfilePic(file);
+        setSelectedProfilePicName(file.name);
 
-      try {
-        // Upload the selected profile picture to Firebase Storage
-        await setProfilePic(user, file);
+        try {
+          // Upload the selected profile picture to Firebase Storage
+          await setProfilePic(user, file);
 
-        // Set the profilePicUrl to the new URL
-        const newUrl = await getProfilePic(user.email, file.name);
-        setProfilePicUrl(newUrl);
+          // Set the profilePicUrl to the new URL
+          const newUrl = await getProfilePic(user.email, file.name);
+          setProfilePicUrl(newUrl);
 
-        // Display a success message
-        alert("Profile picture uploaded successfully!");
-      } catch (error) {
-        console.error("Error uploading profile picture:", error);
-        alert("An error occurred while uploading the profile picture.");
+          // Display a success message
+          alert("Profile picture uploaded successfully!");
+        } catch (error) {
+          console.error("Error uploading profile picture:", error);
+          alert("An error occurred while uploading the profile picture.");
+        }
       }
     }
   };
@@ -336,35 +345,58 @@ function Profile() {
   const handleDeletePost = async (username: string, postId: string) => {
     //loop through array and look for matching postid then when it matches, take the filename of that object
     //that is the filename that you pass in await deletePost(user.username, postId, fileName); // Backend deletion
-    try {
-      await deletePost(user.username, postId, fileName); // Backend deletion
-      setPosts((prevPosts) =>
-        prevPosts.filter((post) => post.postId !== postId)
-      ); // Local state update
+    console.log("Delete button clicked for post: ${postId}");
+    let fileName: string | null = null;
 
-      alert("Post deleted successfully!");
-    } catch (error) {
-      console.error("Error deleting post:", error);
-      alert("An error occurred while deleting the post.");
+    for (const post of posts) {
+      if (post.postId === postId) {
+        fileName = post.mediaUrl.split("%2F").pop().split("?")[0];
+        break;
+      }
+    }
+    if (!fileName) {
+      console.error("File name not found for post:", postId);
+      return;
+    }
+
+    if (user.email !== targetUser.email) {
+      try {
+        await deletePost(user.username, postId, fileName); // Backend deletion
+        setPosts((prevPosts) =>
+          prevPosts.filter((post) => post.postId !== postId)
+        );
+
+        alert("Post deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting post:", error);
+        alert("An error occurred while deleting the post.");
+      }
     }
   };
 
   const handleEditClick = (postId: string, currentCaption: string) => {
-    if (editingPostId === postId) {
-      setEditingPostId(null); // Hide the editor if it's already shown for this post
-      setEditedCaption(""); // Clear the edited caption
-    } else {
-      setEditingPostId(postId); // Show the editor for this post
-      setEditedCaption(currentCaption); // Set the current caption to the edited caption state
+    const updatedPosts = posts.map((post) => {
+      if (post.postId === postId) {
+        return {
+          ...post,
+          isEditing: !post.isEditing,
+        };
+      }
+      return post;
+    });
+    setPosts(updatedPosts);
+    if (!posts.find((post) => post.postId === postId)?.isEditing) {
+      setEditedCaption(currentCaption);
     }
   };
 
   const handleSaveEditedCaption = (postId: string) => {
     const updatedPosts = posts.map((post) =>
-      post.postId === postId ? { ...post, caption: editedCaption } : post
+      post.postId === postId
+        ? { ...post, caption: editedCaption, isEditing: false }
+        : post
     );
     setPosts(updatedPosts);
-    setEditingPostId(null);
     setEditedCaption("");
   };
 
@@ -395,7 +427,7 @@ function Profile() {
                     setSearchTerm("");
                     setDropdownOpen(false);
                     navigate("/profile", {
-                      state: { user: currentUser, target: targetUser },
+                      state: { user: user, target: targetUser },
                     });
                   }}
                 >
@@ -456,24 +488,35 @@ function Profile() {
 
         {profilePicUrl && (
           <div className="profile-picture-right">
-            <label htmlFor="profile-pic" onClick={handleProfilePicChange}>
+            <label
+              htmlFor="profile-pic"
+              onClick={
+                user.email === targetUser.email
+                  ? handleProfilePicChange
+                  : undefined
+              }
+            >
               <img
                 src={profilePicUrl || "default-profile-picture-url"}
                 alt="Profile"
                 className="profile-pic"
               />
+              {user.email === targetUser.email && (
+                <div onClick={handleProfilePicChange}>Change Picture</div>
+              )}
+              <input
+                ref={profilePicInputRef}
+                type="file"
+                id="profile-pic"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handleProfilePicInputChange}
+              />
             </label>
-            <input
-              ref={profilePicInputRef}
-              type="file"
-              id="profile-pic"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={handleProfilePicInputChange}
-            />
+
             <div className="user-details">
-              <p className="user-name">{user.first_name}</p>
-              <p className="user-username">@{user.username}</p>
+              <p className="user-name">{targetUser.first_name}</p>
+              <p className="user-username">@{targetUser.username}</p>
               <button
                 className="add-button"
                 onClick={handleAddButton}
@@ -492,7 +535,7 @@ function Profile() {
 
             {!isEditingBio && (
               <div className="bio-display">
-                <p>{bio}</p>
+                <p>{targetUser.bio}</p>
               </div>
             )}
 
@@ -505,7 +548,7 @@ function Profile() {
                 <h2>Bio</h2>
                 <textarea
                   className="bio-textarea"
-                  value={bio}
+                  value={targetUser.bio}
                   onChange={handleBioChange}
                   placeholder="Type your bio here"
                   maxLength={maxCharacterLimit}
@@ -530,28 +573,63 @@ function Profile() {
 
               <div className="post-actions">
                 <button
-                  className={`love-button ${isLiked ? "liked" : ""}`}
-                  onClick={() => setIsLiked(!isLiked)}
+                  className={`love-button ${
+                    isLiked.includes(post.postId) ? "liked" : ""
+                  }`}
+                  onClick={() => {
+                    if (isLiked.includes(post.postId)) {
+                      setIsLiked((prevLikedPosts) =>
+                        prevLikedPosts.filter((id) => id !== post.postId)
+                      );
+                    } else {
+                      setIsLiked((prevLikedPost) => [
+                        ...prevLikedPost,
+                        post.postId,
+                      ]);
+                    }
+                  }}
                 >
-                  {isLiked ? "❤️" : "♡"}
+                  {isLiked.includes(post.postId) ? "❤️" : "♡"}
                 </button>
               </div>
 
-              {editingPostId === post.postId ? (
-                <>
-                  <textarea
-                    value={editedCaption}
-                    onChange={(e) => setEditedCaption(e.target.value)}
-                  />
-                  <button onClick={() => handleSaveEditedCaption(post.postId)}>
-                    Save
-                  </button>
-                </>
-              ) : null}
-              <div className="post-caption">
-                <p className="post-caption">
-                  @{user.username}: {post.caption}
-                </p>
+              <div key={post.postId}>
+                {post.isEditing ? (
+                  <div className="post-caption">
+                    <input
+                      className="edit-input"
+                      type="text"
+                      value={editedCaption}
+                      onChange={(e) => setEditedCaption(e.target.value)}
+                    />
+                    <button
+                      className="edit-save-button"
+                      onClick={() => handleSaveEditedCaption(post.postId)}
+                    >
+                      Save
+                    </button>
+                    <button
+                      className="edit-button"
+                      onClick={() => handleEditClick(post.postId, post.caption)}
+                    >
+                      🖉
+                    </button>
+                  </div>
+                ) : (
+                  <div className="post-caption">
+                    <p className="post-caption-text">
+                      @{targetUser.username}: {post.caption}
+                      <button
+                        className="edit-button"
+                        onClick={() =>
+                          handleEditClick(post.postId, post.caption)
+                        }
+                      >
+                        🖉
+                      </button>
+                    </p>
+                  </div>
+                )}
               </div>
               <div className="post-options">
                 <div

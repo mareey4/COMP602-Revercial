@@ -3,6 +3,7 @@ import { getStorage, uploadBytes, getDownloadURL, ref as storageRef, deleteObjec
 import { fbConfig } from './firebase';
 import User from './user';
 import FriendRequest from '../Back End/friendRequest';
+import { generateTicketID } from './TicketGenerator';
 
 // Saves the user data to the database
 export async function saveUserData(newUser) {
@@ -268,7 +269,7 @@ export async function getFriendsList(email) {
 
                     onValue(refUser, async (snapshot) => {
                         const userData = snapshot.val();
-                        const username = userData.Username;
+                        const username = userData.username;
                         const user = await getUserViaUsername(username);
 
                         friends.push(user);
@@ -318,7 +319,7 @@ export async function addFriend(currentUser, targetUser) {
     }
 
     await sendFriendRequest(targetUser, currentUser);
-    const randTicket = await generateTicketID("Profile");
+    const randTicket = await generateTicketID("Profile", currentUser.email);
     const refFriends = databaseRef(db, 'Friends/' + sanitizedCurrentEmail + "/" + randTicket);
 
     return new Promise(() => {
