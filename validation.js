@@ -333,22 +333,60 @@ export async function getFriendRequests(email) {
     });
 }
 
+// Sends a direct message to the recipient's inbox
+export async function sendDM(recipent, sender, message) {
+    const db = getDatabase(fbConfig);
+    const ticket = await generateDMTicket(recipent, sender);
+    let sanitizedSender;
+
+    if(sender.email.includes(".")) {
+        sanitizedSender = sender.email.replaceAll(".", ",");
+    } else {
+        sanitizedSender = sender.email;
+    }
+
+    const refDM = databaseRef(db, 'Inbox/' + sanitizedSender + '/DM/' + recipent.username + '/' + ticket);
+
+    set(refDM, {
+        Recipient: recipent.username,
+        Sender: sender.username,
+        Message: message
+    });
+}
+
 // Gets all direct messages from the users inbox in the database
 // Returns a data structure containing all the direct messages to the function caller
-export async function getDM(email) {
-    const sanitizedEmail = email.replaceAll(".",",");
+export async function getDM(currentUser, targetUser) {
     const db = getDatabase(fbConfig);
+    let sanitizedCurrent;
+
+    if(currentUser.email.includes(".")) {
+        sanitizedCurrent = currentUser.email.replaceAll(".", ",");
+    } else {
+        sanitizedCurrent = currentUser.email;
+    }
+
+    const refDM = databaseRef(db, 'Inbox/' + sanitizedCurrent + '/DM/' + targetUser.username);
 
     let directMsgs = [];
 
     return new Promise((resolve) => {
+        onValue(refDM, (snapshot) => {
+            const dmData = snapshot.val();
 
+            for(const dms in dmData) {
+                const data = dmData[dms];
+
+                const dm = data.Message;
+
+                directMsgs.push(dm);
+            }
+        });
 
         resolve(directMsgs);
         return;
     });
 }
-
 // Gets all system messages from the users inbox in the database
 // Returns a data structure containing all the system messages to the function caller
 export async function getSystemMsg(email) {
