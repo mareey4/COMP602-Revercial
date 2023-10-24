@@ -194,6 +194,7 @@ function Profile() {
     };
   }, [openChat]);
 
+  // useEffect to get the given user's posts from the database
   useEffect(() => {
     async function fetchPosts() {
       userPosts = await getPostsForUser(targetUser.username);
@@ -204,6 +205,7 @@ function Profile() {
     fetchPosts();
   }, [targetUser.username]);
 
+  // useEffect to get the given user's bio info from the database
   useEffect(() => {
     async function fetchBio() {
       const fetchedUser = await getUserViaEmail(user.email);
