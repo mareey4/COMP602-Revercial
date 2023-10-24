@@ -1,32 +1,56 @@
-/* Styles for the .wrapper class */
-.wrapper {
-  text-align: center;
-  width: 600px;
+/* Ensuring body and html have full height */
+body, html {
+  height: 100%;
+  margin: 0;
 }
 
-/* Styles for h1 elements inside .wrapper */
+body {
+  display: flex;
+  justify-content: center;  /* Horizontally center */
+  align-items: center;      /* Vertically center */
+}
+
+.wrapper {
+  width: 600px;
+  height: 500px;
+  background-color: #ffffff; /* Optional: giving a background-color for distinction */
+  border-radius: 5px;        /* Optional: rounding corners for aesthetics */
+  padding: 30px;
+  position: relative;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.1); /* Optional: giving a shadow for depth */
+}
+
 .wrapper h1 {
+  margin-top: 100px;
   font-size: 36px;
   text-align: center;
-  color: white;
+  color: #293728;
   margin-bottom: 20px;
 }
 
-/* Styles for .wrapper-2 class */
 .wrapper-2 {
-  width: 370px;
+  width: 100%;
   text-align: center;
   margin-top: 20px; 
 }
 
-/* Styles for h2 elements inside .wrapper-2 */
 .wrapper-2 h2 {
   font-size: 15px;
-  color: white;
+  color: #293728;
   text-align: center;
+    margin-top: 20px; 
+
 }
 
-/* Styles for .create-button class */
+.create-button-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 50px;
+  position: absolute;
+  width:500px;
+  bottom: 5px; /* This will position the container with respect to the .wrapper */
+}
+
 .create-button {
   background-color: #007bff;
   color: white;
@@ -34,42 +58,29 @@
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
-  margin: 20px 0;
-  margin-right: 50px; 
+  transition: 0.3s; /* Optional: smooth hover transition */
 }
 
-/* Styles for .create-button-container class */
-.create-button-container {
-  text-align: center; 
-  display: flex;
-  justify-content: space-between;  margin-top: 50px;
+.create-button:hover {
+transform: skewY(5px);}
+
+
+.back-button { /* Assuming you might use a class for the Back button */
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-/* Styles for input[type="date"] */
-input[type="date"] {
-  width: 92%;
+input[type="date"], input[type="text"], select, textarea {
+  width: 100%;
   padding: 10px;
-  margin-bottom: 10px;
+  margin-top: 20px;
+  border-radius: 3px; /* Optional: rounding corners for input fields */
 }
 
-/* Styles for input[type="text"] */
-input[type="text"] {
-  width: 92%; 
-  padding: 10px;
-  margin-bottom: 10px;
-}
-
-/* Styles for textarea */
-textarea {
-  width: 90%; 
-  padding: 10px;
-  margin-bottom: 10px;
-}
-
-/* Styles for select elements */
 select {
-  width: 92%;
-  padding: 10px;
   background-color: #fff;
-  border: 1px solid #ccc; 
 }

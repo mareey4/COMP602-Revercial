@@ -155,6 +155,23 @@ function CreateEvents() {
     setStep(step - 1);
   };
 
+  const handleEventsLink = () => {
+    navigate("/profile", { state: { user: user } });
+  };
+
+  const handleJoinEventsLink = (event: React.MouseEvent) => {
+    event.preventDefault();
+    console.log("Navigating to JoinEvents with user:", user);
+    navigate("/join-events", { state: { user: user } });
+  };
+
+  // Function to handle user logout (not fully implemented).
+  const handleLogout = () => {
+    if (user) {
+      user.loginStatus = false; // Update the login status (Note: This might need further implementation).
+    }
+  };
+
   return (
     // Navigation bar and JSX component with steps to create the event
     <div className={`body ${sidebarOpen ? "sidebar-open" : ""}`}>
@@ -170,134 +187,135 @@ function CreateEvents() {
         <h2></h2>
         <ul>
           <li>
-            <Link to="/Profile" onClick={handleProfileLink}>
+            <Link to="/profile" onClick={handleProfileLink}>
               Profile
             </Link>
           </li>
           <li>
-            <Link to="/create-events">Create Event</Link>
+            <Link to="/create-events" onClick={handleEventsLink}>
+              Create Event
+            </Link>
           </li>
           <li>
-            <Link to="/Privacy">Privacy Settings</Link>
+            <Link to="/join-events" onClick={handleJoinEventsLink}>
+              Join Events{" "}
+            </Link>
           </li>
           <li>
             <Link to="/Support">Support Page</Link>
           </li>
           <li>
-            <Link to="/Login">Log out</Link>{" "}
+            <Link to="/Login" onClick={handleLogout}>
+              Log out
+            </Link>{" "}
           </li>
         </ul>
       </div>
+
       <div className="wrapper">
         <h1>Create an Event</h1>
-      </div>
 
-      <div className="wrapper-h1">
-        {step === 1 && (
-          <>
-            <h2 style={{ color: "#fff" }}>
-              What type of event are you planning?
-            </h2>
-            <select value={selectedEventType} onChange={handleEventTypeChange}>
-              <option value="">Select an event type</option>
-              {eventChoices.map((event, index) => (
-                <option key={index} value={event}>
-                  {event}
-                </option>
-              ))}
-            </select>
-            <div className="create-button-container">
-              <button
-                className="create-button"
-                onClick={() => setStep(2)}
-                disabled={!selectedEventType}
+        <div className="wrapper-h1">
+          {step === 1 && (
+            <>
+              <h2 style={{ color: "#293728" }}>
+                What type of event are you planning?
+              </h2>
+              <select
+                value={selectedEventType}
+                onChange={handleEventTypeChange}
               >
-                Continue
-              </button>
-            </div>
-          </>
-        )}
-        {step === 2 && (
-          <>
-            <h2 style={{ color: "#fff" }}>When is the event?</h2>
-            <input
-              type="date"
-              name="date"
-              value={eventDetails.date}
-              onChange={handleInputChange}
-              min={getCurrentDate()}
-            />
+                <option value="">Select an event type</option>
+                {eventChoices.map((event, index) => (
+                  <option key={index} value={event}>
+                    {event}
+                  </option>
+                ))}
+              </select>
+              <div className="create-button-container">
+                <button
+                  className="create-button"
+                  onClick={() => setStep(2)}
+                  disabled={!selectedEventType}
+                >
+                  Continue
+                </button>
+              </div>
+            </>
+          )}
+          {step === 2 && (
+            <>
+              <h2 style={{ color: "#293728" }}>When is the event?</h2>
+              <input
+                type="date"
+                name="date"
+                value={eventDetails.date}
+                onChange={handleInputChange}
+                min={getCurrentDate()}
+              />
 
-            <div className="create-button-container">
-              <button
-                className="create-button back-button"
-                onClick={handleBack}
-              >
-                Back
-              </button>
-              <button className="create-button" onClick={() => setStep(3)}>
-                Continue
-              </button>
-            </div>
-          </>
-        )}
-        {step === 3 && (
-          <>
-            <h2 style={{ color: "#fff" }}>Where is the event?</h2>
-            <input
-              type="text"
-              name="location"
-              value={eventDetails.location}
-              onChange={handleInputChange}
-              placeholder="Enter location..."
-            />
-            <div className="create-button-container">
-              <button
-                className="create-button back-button"
-                onClick={handleBack}
-              >
-                Back
-              </button>
-              <button
-                className="create-button"
-                onClick={() => setStep(4)}
-                disabled={!eventDetails.location || !addressValid}
-              >
-                Continue
-              </button>
-            </div>
-          </>
-        )}
-        {step === 4 && (
-          <>
-            <h2 style={{ color: "#fff" }}>
-              Describe your event (max 500 characters)
-            </h2>
-            <textarea
-              name="description"
-              value={eventDetails.description}
-              onChange={handleInputChange}
-              maxLength={501}
-              rows={5}
-              style={{ width: "92%", height: "200px" }}
-            />
-            <div className="create-button-container">
-              <button
-                className="create-button back-button"
-                onClick={handleBack}
-              >
-                Back
-              </button>{" "}
-              <button
-                className="create-button"
-                onClick={handleCreateEvent}
-                disabled={!eventDetails.description}
-              >
-                Create Event
-              </button>
-            </div>
-          </>
-        )}
+              <div className="create-button-container">
+                <button className="back-button" onClick={handleBack}>
+                  Back
+                </button>
+                <button className="create-button" onClick={() => setStep(3)}>
+                  Continue
+                </button>
+              </div>
+            </>
+          )}
+          {step === 3 && (
+            <>
+              <h2 style={{ color: "#293728" }}>Where is the event?</h2>
+              <input
+                type="text"
+                name="location"
+                value={eventDetails.location}
+                onChange={handleInputChange}
+                placeholder="Enter location..."
+              />
+              <div className="create-button-container">
+                <button className="back-button" onClick={handleBack}>
+                  Back
+                </button>
+                <button
+                  className="create-button"
+                  onClick={() => setStep(4)}
+                  disabled={!eventDetails.location || !addressValid}
+                >
+                  Continue
+                </button>
+              </div>
+            </>
+          )}
+          {step === 4 && (
+            <>
+              <h2 style={{ color: "#293728" }}>
+                Describe your event (max 500 characters)
+              </h2>
+              <textarea
+                name="description"
+                value={eventDetails.description}
+                onChange={handleInputChange}
+                maxLength={501}
+                rows={5}
+                style={{ width: "92%", height: "100px" }}
+              />
+              <div className="create-button-container">
+                <button className="back-button" onClick={handleBack}>
+                  Back
+                </button>{" "}
+                <button
+                  className="create-button"
+                  onClick={handleCreateEvent}
+                  disabled={!eventDetails.description}
+                >
+                  Create Event
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

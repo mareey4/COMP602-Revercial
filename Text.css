@@ -54,6 +54,7 @@ input[type="password"] {
   justify-content: center;  /* Horizontally center the content */
   align-items: center;      /* Vertically center the content */
   padding: 20px 0;  
+  left:20px;
 }
 
 .container .create-button-container .create-button {

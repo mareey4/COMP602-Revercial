@@ -2,8 +2,8 @@ import { getDatabase, ref, ref as databaseRef, get, set, onValue, remove, child,
 import { getStorage, uploadBytes, getDownloadURL, ref as storageRef, deleteObject } from 'firebase/storage';
 import { fbConfig } from './firebase';
 import User from './user';
-import FriendRequest from '../Back End/friendRequest';
-import { generateTicketID } from './TicketGenerator';
+import FriendRequest from './friendRequest';
+import { generateTicketID, generateDMTicket } from './TicketGenerator';
 
 // Saves the user data to the database
 export async function saveUserData(newUser) {
@@ -22,7 +22,7 @@ export async function saveUserData(newUser) {
         Bio: newUser.bio
     });
 
-     await createFriendsList(sanitizedEmail);
+    await createFriendsList(sanitizedEmail);
     await createInbox(sanitizedEmail);
 }
 
@@ -62,6 +62,12 @@ async function createInbox(email) {
     const refFriendRequests = databaseRef(db, 'Inbox/' + sanitizedEmail + "/Friend_Requests");
 
     set(refFriendRequests, {
+        Holder: "Do not remove"
+    });
+
+    const refDMs = databaseRef(db, 'Inbox/' + sanitizedEmail + "/DM");
+
+    set(refDMs, {
         Holder: "Do not remove"
     });
 }
@@ -106,8 +112,7 @@ export async function savePostMetadata(username, postId, caption, mediaUrl) {
     await set(postRef, postData);
 }
 
-
- export async function checkExistingTicketID(ticketID) {
+export async function checkExistingTicketID(ticketID) {
     const db = getDatabase(fbConfig);
     const topicOptions = [
         'Account Issues',
@@ -245,6 +250,122 @@ async function sendFriendRequest(recipient, sender) {
     });
 }
 
+// Gets all friend requests from the users inbox in the database
+// Returns a data structure containing all friend requests to the function caller
+export async function getFriendRequests(email) {
+    const db = getDatabase(fbConfig);
+    const sanitizedEmail = email.replaceAll(".",",");
+    const refFriendRequests = databaseRef(db, 'Users/' + sanitizedEmail + '/Inbox/Friend_Requests');
+    const requestInbox = [];
+
+    return new Promise((resolve) => {
+        onValue(refFriendRequests, (snapshot) => {
+            const requests = snapshot.val();
+            
+            for(const emails in requests) {
+                const requestData = requests[emails];
+                const date = new Date(requestData.Date);
+
+                const request = new FriendRequest(
+                    requestData.Message,
+                    requestData.Status,
+                    date
+                );
+
+                requestInbox.push(request);
+            }
+        });
+
+        resolve(requestInbox);
+        return;
+    });
+}
+
+// Sends a direct message to the recipient's inbox
+export async function sendDM(recipent, sender, message) {
+    const db = getDatabase(fbConfig);
+    const ticket = await generateDMTicket(recipent, sender);
+    let sanitizedSender;
+
+    if(sender.email.includes(".")) {
+        sanitizedSender = sender.email.replaceAll(".", ",");
+    } else {
+        sanitizedSender = sender.email;
+    }
+
+    const refDM = databaseRef(db, 'Inbox/' + sanitizedSender + '/DM/' + recipent.username + '/' + ticket);
+
+    set(refDM, {
+        Recipient: recipent.username,
+        Sender: sender.username,
+        Message: message
+    });
+}
+
+// Gets all direct messages from the users inbox in the database
+// Returns a data structure containing all the direct messages to the function caller
+export async function getDM(currentUser, targetUser) {
+    const db = getDatabase(fbConfig);
+    let sanitizedCurrent;
+
+    if(currentUser.email.includes(".")) {
+        sanitizedCurrent = currentUser.email.replaceAll(".", ",");
+    } else {
+        sanitizedCurrent = currentUser.email;
+    }
+
+    const refDM = databaseRef(db, 'Inbox/' + sanitizedCurrent + '/DM/' + targetUser.username);
+
+    let directMsgs = [];
+
+    return new Promise((resolve) => {
+        onValue(refDM, (snapshot) => {
+            const dmData = snapshot.val();
+
+            for(const dms in dmData) {
+                const data = dmData[dms];
+
+                const dm = data.Message;
+
+                directMsgs.push(dm);
+            }
+        });
+
+        resolve(directMsgs);
+        return;
+    });
+}
+
+// Gets all system messages from the users inbox in the database
+// Returns a data structure containing all the system messages to the function caller
+export async function getSystemMsg(email) {
+    const sanitizedEmail = email.replaceAll(".",",");
+    const db = getDatabase(fbConfig);
+
+    let sysMessages = [];
+
+    return new Promise((resolve) => {
+
+
+        resolve(sysMessages);
+        return;
+    });
+}
+
+// Gets all the messages from the users inbox in the database and orders them by date
+// Returns a data structure containing all the messages
+export async function getInbox(email) {
+    const db = getDatabase(fbConfig);
+    const refUsers = databaseRef(db, 'Users');
+    
+    let messages = [];
+    let friendRequests = getFriendRequests(email);
+    let directMsgs = getDM(email);
+    let sysMessages = getSystemMsg(email);
+    let maxSize;
+    
+}
+
 // Gets the user's friends list from the database
 export async function getFriendsList(email) {
     const db = getDatabase(fbConfig);
@@ -269,7 +390,7 @@ export async function getFriendsList(email) {
 
                     onValue(refUser, async (snapshot) => {
                         const userData = snapshot.val();
-                        const username = userData.username;
+                        const username = userData.Username;
                         const user = await getUserViaUsername(username);
 
                         friends.push(user);
@@ -365,16 +486,15 @@ export async function removeFriend(currentUser, targetUser) {
         return;
     });
 }
+
 export async function getUserViaEmail(userEmail) {
     const db = getDatabase(fbConfig);
     const refEmail = databaseRef(db, 'Users');
     const sanitizedEmail = userEmail.replaceAll(".",",");
-    console.log("Sanitized Email used for query:", sanitizedEmail);
 
     return new Promise((resolve) => {
         onValue(refEmail, (snapshot) => {
             const dataEmail = snapshot.val();
-            console.log("Data retrieved based on email:", dataEmail);
             
             for(const email in dataEmail){
                 if(email === sanitizedEmail){
@@ -757,57 +877,19 @@ export async function getPostsForUser(username) {
     return postsArray;
 }
 
-// Sends a direct message to the recipient's inbox
-export async function sendDM(recipent, sender, message) {
-    const db = getDatabase(fbConfig);
-    const ticket = await generateDMTicket(recipent, sender);
-    let sanitizedSender;
+export async function getPostImage(username, ticketID, filename) {
+    const storage = getStorage(fbConfig);
+    const refFile = storageRef(storage, 'Posts/' + username + '/' + ticketID + '/' + filename);
 
-    if(sender.email.includes(".")) {
-        sanitizedSender = sender.email.replaceAll(".", ",");
-    } else {
-        sanitizedSender = sender.email;
-    }
-
-    const refDM = databaseRef(db, 'Inbox/' + sanitizedSender + '/DM/' + recipent.username + '/' + ticket);
-
-    set(refDM, {
-        Recipient: recipent.username,
-        Sender: sender.username,
-        Message: message
-    });
-}
-
-// Gets all direct messages from the users inbox in the database
-// Returns a data structure containing all the direct messages to the function caller
-export async function getDM(currentUser, targetUser) {
-    const db = getDatabase(fbConfig);
-    let sanitizedCurrent;
-
-    if(currentUser.email.includes(".")) {
-        sanitizedCurrent = currentUser.email.replaceAll(".", ",");
-    } else {
-        sanitizedCurrent = currentUser.email;
-    }
-
-    const refDM = databaseRef(db, 'Inbox/' + sanitizedCurrent + '/DM/' + targetUser.username);
-
-    let directMsgs = [];
-
-    return new Promise((resolve) => {
-        onValue(refDM, (snapshot) => {
-            const dmData = snapshot.val();
-
-            for(const dms in dmData) {
-                const data = dmData[dms];
-
-                const dm = data.Message;
-
-                directMsgs.push(dm);
-            }
-        });
-
-        resolve(directMsgs);
-        return;
+    return new Promise(async (resolve) => {
+        try {
+            const downloadURL = await getDownloadURL(refFile);
+            resolve(downloadURL);
+            return;
+        } catch {
+            console.error("An error occurred whilst retrieving profile picture.");
+            resolve(undefined);
+            return;
+        }
     });
 }

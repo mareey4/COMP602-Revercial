@@ -20,16 +20,18 @@ function Text() {
   const [dob, setDOB] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
 
   // React Router's navigate function for routing
   const navigate = useNavigate();
 
   // Function to handle the "Create" button click
   const handleCreateClick = async () => {
-    const firstName = document.querySelector(
+    /*     const firstName = document.querySelector(
       'input[name="fname"]'
     ) as HTMLInputElement;
-    const lastName = document.querySelector(
+ */
+    /* const lastName = document.querySelector(
       'input[name="lname"]'
     ) as HTMLInputElement;
     const dob = document.querySelector('input[name="dob"]') as HTMLInputElement;
@@ -41,29 +43,22 @@ function Text() {
     ) as HTMLInputElement;
     const password = document.querySelector(
       'input[name="password"]'
-    ) as HTMLInputElement;
+    ) as HTMLInputElement; */
 
     let errorMsg = "Error:\n";
 
     // Check if any required fields are empty
-    if (
-      !firstName.value ||
-      !lastName.value ||
-      !dob.value ||
-      !email.value ||
-      !username.value ||
-      !password.value
-    ) {
+    if (!firstName || !lastName || !dob || !email || !username || !password) {
       errorMsg += "  - Please fill in all fields.\n";
     }
 
     // Validate user inputs using validation functions
-    const isFirstNameValid = await validateName(firstName.value);
-    const isLastNameValid = await validateName(lastName.value);
-    const isDOBValid = await validateDOB(dob.value);
-    const isUsernameValid = await validateUsername(username.value);
-    const isPasswordValid = await validatePassword(password.value);
-    const isEmailValid = await validateEmail(email.value);
+    const isFirstNameValid = await validateName(firstName);
+    const isLastNameValid = await validateName(lastName);
+    const isDOBValid = await validateDOB(dob);
+    const isUsernameValid = await validateUsername(username);
+    const isPasswordValid = await validatePassword(password);
+    const isEmailValid = await validateEmail(email);
 
     if (!isFirstNameValid || !isLastNameValid) {
       errorMsg += "  - Invalid name(s).\n";
@@ -95,8 +90,8 @@ function Text() {
       isPasswordValid &&
       isEmailValid
     ) {
-      let resultEmail = await getUserViaEmail(email.value);
-      let resultUsername = await getUserViaUsername(username.value);
+      let resultEmail = await getUserViaEmail(email);
+      let resultUsername = await getUserViaUsername(username);
 
       // Placeholder for default profile picture
       let defaultPFP = "Null";
@@ -105,14 +100,15 @@ function Text() {
         if (resultUsername === undefined) {
           // Create a new User object
           const newUser = new User(
-            firstName.value,
-            lastName.value,
-            username.value,
-            dob.value,
-            email.value,
-            password.value,
+            firstName,
+            lastName,
+            username,
+            dob,
+            email,
+            password,
             false,
-            defaultPFP
+            defaultPFP,
+            ""
           );
 
           // Display success message, save user data, and navigate to the profile page
@@ -171,7 +167,12 @@ function Text() {
         </label>
         <label>
           Email:
-          <input type="text" name="email" />
+          <input
+            type="text"
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </label>
 
         <label>

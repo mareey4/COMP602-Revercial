@@ -19,6 +19,7 @@ import {
   savePostAttachment,
   savePostMetadata,
   getUserViaEmail,
+  deletePostMediaFromStorage,
   deletePost,
   getPostsForUser,
   sendDM,
@@ -27,7 +28,7 @@ import {
 import "../Front End/Profile.css";
 import "../Front End/NavBar.css";
 import { useLocation } from "react-router-dom";
-import User from "../Back End/user";
+import User from "./user";
 
 type Post = {
   mediaUrl: string;
@@ -38,31 +39,15 @@ type Post = {
 };
 
 function Profile() {
+  const navigate = useNavigate();
+
   // State to control the sidebar's open/close status.
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const navigate = useNavigate();
+  // States for search bar and drop down
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [addButtonDisplay, setAddButtonDisplay] = useState(false);
-  const [removeButtonDisplay, setRemoveButtonDisplay] = useState(false);
-
-  // State to store the profile picture URL.
-  const [profilePicUrl, setProfilePicUrl] = useState(null);
-  const [selectedProfilePic, setSelectedProfilePic] = useState<File | null>(
-    null
-  );
-  const [selectedProfilePicName, setSelectedProfilePicName] = useState<
-    string | null
-  >(null);
-  const profilePicInputRef = useRef<HTMLInputElement | null>(null);
-
-  const [showPostEditor, setShowPostEditor] = useState(false); // to toggle the post editor modal
-  const [caption, setCaption] = useState(""); // to store the caption
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [showOptionsFor, setShowOptionsFor] = useState<string | null>(null);
 
   // States for friends list
   const [profilePicUrls, setProfilePicUrls] = useState<string[]>([]);
@@ -76,8 +61,29 @@ function Profile() {
   const [newMessage, setNewMessage] = useState("");
   const [recipientUser, setRecipient] = useState<User>();
 
+  // States for add/remove button
+  const [addButtonDisplay, setAddButtonDisplay] = useState(false);
+  const [removeButtonDisplay, setRemoveButtonDisplay] = useState(false);
+
+  // State to store the profile picture URL.
+  const [profilePicUrl, setProfilePicUrl] = useState(null);
+  const [selectedProfilePic, setSelectedProfilePic] = useState<File | null>(
+    null
+  );
+  const [selectedProfilePicName, setSelectedProfilePicName] = useState<
+    string | null
+  >(null);
+  const profilePicInputRef = useRef<HTMLInputElement | null>(null);
+
+  // States for post options
+  const [showPostEditor, setShowPostEditor] = useState(false); // to toggle the post editor modal
+  const [caption, setCaption] = useState(""); // to store the caption
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [showOptionsFor, setShowOptionsFor] = useState<string | null>(null);
+
+  // States for posts
   const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null);
-  const [isLiked, setIsLiked] = useState<string[]>([]);
+  const [isLiked, setIsLiked] = useState(false);
   const [fileName, setFileName] = useState("");
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editedCaption, setEditedCaption] = useState("");
@@ -88,18 +94,15 @@ function Profile() {
   const targetUser = location.state?.target;
   const targetEmail = targetUser.email;
 
-  // Sanitize email and profile picture name for fetching the profile picture.
-  const unsanitizedEmail = user.email;
-  const unsanitizedPFPName = user.profilePic;
-
   // Add a state variable for the user's bio
-  const [isEditingBio, setIsEditingBio] = useState(false);
   const [bio, setBio] = useState(user.bio || ""); // Initialize with the user's existing bio, if available
+  const [isEditingBio, setIsEditingBio] = useState(false);
 
   const maxCharacterLimit = 500;
 
-  const chatBoxRef = useRef(null);
+  // References for pop-up components
   const searchContainerRef = useRef(null);
+  const chatBoxRef = useRef(null);
 
   // Variables for target user information
   let friends: User[];
@@ -109,6 +112,7 @@ function Profile() {
   let userPosts: Post[];
   let pfpName = "Null";
 
+  // If statement to set instance target user profile picture pull
   if (targetUser.profilePic !== pfpName) {
     pfpName = targetUser.profilePic;
   }
@@ -150,7 +154,7 @@ function Profile() {
   }
 
   useEffect(() => {
-    // Add a click event listener to the document
+    // Add a click event listener for the search bar drop down
     const handleClickOutside = (event: { target: any }) => {
       if (
         searchContainerRef.current &&
@@ -192,7 +196,8 @@ function Profile() {
 
   useEffect(() => {
     async function fetchPosts() {
-      const userPosts = await getPostsForUser(targetUser.username);
+      userPosts = await getPostsForUser(targetUser.username);
+
       setPosts(userPosts);
     }
 
@@ -215,6 +220,7 @@ function Profile() {
     setSidebarOpen(!sidebarOpen);
   };
 
+  // Function to handle the add friend button
   const handleAddButton = async () => {
     const check = await checkFriends(user.email, targetEmail);
     if (user.email !== targetUser.email && !check) {
@@ -223,6 +229,7 @@ function Profile() {
   };
 
   useEffect(() => {
+    // Function to handle add friend button display
     async function updateAddButtonDisplay() {
       const check = await checkFriends(user.email, targetEmail);
       setAddButtonDisplay(user.email !== targetUser.email && !check);
@@ -231,6 +238,7 @@ function Profile() {
     updateAddButtonDisplay();
   }, [user.email, targetEmail]);
 
+  // Function to handle the remove friend button
   const handleRemoveButton = async () => {
     const check = await checkFriends(user.email, targetEmail);
     if (user.email !== targetUser.email && check) {
@@ -239,6 +247,7 @@ function Profile() {
   };
 
   useEffect(() => {
+    // Function to handle remove friend button display
     async function updateRemoveButtonDisplay() {
       const check = await checkFriends(user.email, targetEmail);
       setRemoveButtonDisplay(user.email !== targetUser.email && check);
@@ -247,6 +256,7 @@ function Profile() {
     updateRemoveButtonDisplay();
   }, [user.email, targetEmail]);
 
+  // Function to handle search bar
   const handleSearch = async (event: ChangeEvent<HTMLInputElement>) => {
     const searchTerm = event.target.value;
     const holder = await getAllUsers();
@@ -276,6 +286,78 @@ function Profile() {
     setFilteredUsers(filtered);
     setDropdownOpen(true);
   };
+
+  // Function to handle chat box display
+  const handleChatClick = async (friend: User) => {
+    setOpenChat(true);
+    setRecipient(friend);
+    await fetchSentMessages(friend);
+    await fetchRecievedMessages(friend);
+
+    if (sentDMs) {
+      await setSentMessages(sentDMs);
+    }
+
+    if (recievedDMs) {
+      await setRecieved(recievedDMs);
+    }
+  };
+
+  // Function to retrieve sent messages to the target user
+  async function fetchSentMessages(friend: User) {
+    sentDMs = await getDM(user, friend);
+  }
+
+  // Function to retrieve messages from target user
+  async function fetchRecievedMessages(friend: User) {
+    recievedDMs = await getDM(friend, user);
+  }
+
+  // Function for handling the send button
+  const handleMessage = async () => {
+    // Handle sending a new message
+    if (newMessage.trim() === "") {
+      return;
+    }
+
+    // Save the new message to the target user's inbox in the database
+    await sendDM(recipientUser, user, newMessage);
+
+    // Clear the input field and close chat box
+    setNewMessage("");
+    setOpenChat(false);
+  };
+
+  // Function to handle chat message rendering
+  function renderChatMessages() {
+    const messages = [];
+
+    if (friendsList) {
+      for (
+        let i = 0;
+        i < Math.max(sentMessages.length, recievedMessages.length);
+        i++
+      ) {
+        if (sentMessages[i]) {
+          messages.push(
+            <div key={`sent-${i}`} className="sent-message">
+              <p>{sentMessages[i]}</p>
+            </div>
+          );
+        }
+
+        if (recievedMessages[i]) {
+          messages.push(
+            <div key={`received-${i}`} className="received-message">
+              <p>{recievedMessages[i]}</p>
+            </div>
+          );
+        }
+      }
+    }
+
+    return messages;
+  }
 
   // Function to handle user logout (not fully implemented).
   const handleLogout = () => {
@@ -326,17 +408,21 @@ function Profile() {
   };
 
   const handleBioChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    // Update the bio state when the input changes
     setBio(event.target.value);
   };
 
   const handleSaveBio = () => {
     // Call the saveUserBio function to save the user's bio
     saveUserBio(user.email, bio);
-
     alert("Bio saved successfully!");
   };
 
   const handleEventsLink = () => {
+    navigate("/create-events", { state: { user: user } });
+  };
+
+  const handleProfileLink = () => {
     navigate("/profile", { state: { user: user } });
   };
 
@@ -419,28 +505,21 @@ function Profile() {
   };
 
   const handleEditClick = (postId: string, currentCaption: string) => {
-    const updatedPosts = posts.map((post) => {
-      if (post.postId === postId) {
-        return {
-          ...post,
-          isEditing: !post.isEditing,
-        };
-      }
-      return post;
-    });
-    setPosts(updatedPosts);
-    if (!posts.find((post) => post.postId === postId)?.isEditing) {
-      setEditedCaption(currentCaption);
+    if (editingPostId === postId) {
+      setEditingPostId(null); // Hide the editor if it's already shown for this post
+      setEditedCaption(""); // Clear the edited caption
+    } else {
+      setEditingPostId(postId); // Show the editor for this post
+      setEditedCaption(currentCaption); // Set the current caption to the edited caption state
     }
   };
 
   const handleSaveEditedCaption = (postId: string) => {
     const updatedPosts = posts.map((post) =>
-      post.postId === postId
-        ? { ...post, caption: editedCaption, isEditing: false }
-        : post
+      post.postId === postId ? { ...post, caption: editedCaption } : post
     );
     setPosts(updatedPosts);
+    setEditingPostId(null);
     setEditedCaption("");
   };
 
@@ -448,79 +527,10 @@ function Profile() {
     setIsEditingBio((prevState) => !prevState); // Toggle the isEditingBio state
   };
 
-  // Function to handle chat box display
-  const handleChatClick = async (friend: User) => {
-    setOpenChat(true);
-    setRecipient(friend);
-    await fetchSentMessages(friend);
-    await fetchRecievedMessages(friend);
-
-    if (sentDMs) {
-      await setSentMessages(sentDMs);
-    }
-
-    if (recievedDMs) {
-      await setRecieved(recievedDMs);
-    }
-  };
-
-  // Function to retrieve sent messages to the target user
-  async function fetchSentMessages(friend: User) {
-    sentDMs = await getDM(user, friend);
-  }
-
-  // Function to retrieve messages from target user
-  async function fetchRecievedMessages(friend: User) {
-    recievedDMs = await getDM(friend, user);
-  }
-
-  // Function for handling the send button
-  const handleMessage = async () => {
-    // Handle sending a new message
-    if (newMessage.trim() === "") {
-      return;
-    }
-
-    // Save the new message to the target user's inbox in the database
-    await sendDM(recipientUser, user, newMessage);
-
-    // Clear the input field and close chat box
-    setNewMessage("");
-    setOpenChat(false);
-  };
-
-  // Function to handle chat message rendering
-  function renderChatMessages() {
-    const messages = [];
-
-    if (friendsList) {
-      for (
-        let i = 0;
-        i < Math.max(sentMessages.length, recievedMessages.length);
-        i++
-      ) {
-        if (sentMessages[i]) {
-          messages.push(
-            <div key={`sent-${i}`} className="sent-message">
-              <p>{sentMessages[i]}</p>
-            </div>
-          );
-        }
-
-        if (recievedMessages[i]) {
-          messages.push(
-            <div key={`received-${i}`} className="received-message">
-              <p>{recievedMessages[i]}</p>
-            </div>
-          );
-        }
-      }
-    }
-    return messages;
-  }
-
   return (
-    <div className="temp">
+    <div className="main-wrapper">
+      {" "}
+      {/* <-- This is the new wrapping div */}
       <div ref={searchContainerRef} className="search-container">
         {/* Search Bar */}
         <input
@@ -573,6 +583,11 @@ function Profile() {
           <h2></h2>
           <ul>
             <li>
+              <Link to="/profile" onClick={handleProfileLink}>
+                Profile
+              </Link>
+            </li>
+            <li>
               <Link to="/create-events" onClick={handleEventsLink}>
                 Create Event
               </Link>
@@ -581,12 +596,6 @@ function Profile() {
               <Link to="/join-events" onClick={handleJoinEventsLink}>
                 Join Events{" "}
               </Link>
-            </li>
-            <li>
-              <a href="#">Settings</a>
-            </li>
-            <li>
-              <Link to="/Privacy">Privacy Settings</Link>
             </li>
             <li>
               <Link to="/Support">Support Page</Link>
@@ -645,11 +654,13 @@ function Profile() {
                 Remove Friend
               </button>
             </div>
-            {!isEditingBio && targetUser.bio && (
+
+            {!isEditingBio && (
               <div className="bio-display">
                 <p>{targetUser.bio}</p>
               </div>
             )}
+
             <div className="pencil-icon" onClick={handleBioEditToggle}>
               &#128393;
             </div>
@@ -659,7 +670,7 @@ function Profile() {
                 <h2>Bio</h2>
                 <textarea
                   className="bio-textarea"
-                  value={bio}
+                  value={targetUser.bio}
                   onChange={handleBioChange}
                   placeholder="Type your bio here"
                   maxLength={maxCharacterLimit}
@@ -727,63 +738,28 @@ function Profile() {
 
               <div className="post-actions">
                 <button
-                  className={`love-button ${
-                    isLiked.includes(post.postId) ? "liked" : ""
-                  }`}
-                  onClick={() => {
-                    if (isLiked.includes(post.postId)) {
-                      setIsLiked((prevLikedPosts) =>
-                        prevLikedPosts.filter((id) => id !== post.postId)
-                      );
-                    } else {
-                      setIsLiked((prevLikedPost) => [
-                        ...prevLikedPost,
-                        post.postId,
-                      ]);
-                    }
-                  }}
+                  className={`love-button ${isLiked ? "liked" : ""}`}
+                  onClick={() => setIsLiked(!isLiked)}
                 >
-                  {isLiked.includes(post.postId) ? "❤️" : "♡"}
+                  {isLiked ? "❤️" : "♡"}
                 </button>
               </div>
 
-              <div key={post.postId}>
-                {post.isEditing ? (
-                  <div className="post-caption">
-                    <input
-                      className="edit-input"
-                      type="text"
-                      value={editedCaption}
-                      onChange={(e) => setEditedCaption(e.target.value)}
-                    />
-                    <button
-                      className="edit-save-button"
-                      onClick={() => handleSaveEditedCaption(post.postId)}
-                    >
-                      Save
-                    </button>
-                    <button
-                      className="edit-button"
-                      onClick={() => handleEditClick(post.postId, post.caption)}
-                    >
-                      🖉
-                    </button>
-                  </div>
-                ) : (
-                  <div className="post-caption">
-                    <p className="post-caption-text">
-                      @{targetUser.username}: {post.caption}
-                      <button
-                        className="edit-button"
-                        onClick={() =>
-                          handleEditClick(post.postId, post.caption)
-                        }
-                      >
-                        🖉
-                      </button>
-                    </p>
-                  </div>
-                )}
+              {editingPostId === post.postId ? (
+                <>
+                  <textarea
+                    value={editedCaption}
+                    onChange={(e) => setEditedCaption(e.target.value)}
+                  />
+                  <button onClick={() => handleSaveEditedCaption(post.postId)}>
+                    Save
+                  </button>
+                </>
+              ) : null}
+              <div className="post-caption">
+                <p className="post-caption">
+                  @{targetUser.username}: {post.caption}
+                </p>
               </div>
               <div className="post-options">
                 <div
