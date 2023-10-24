@@ -103,6 +103,7 @@ export async function checkExistingTicketID(ticketID, pageType, email) {
     return validID;
 }
 
+// Function for generating a randomized ticket ID for a direct message from one user to another
 export async function generateDMTicket(recipent, sender) {
     // Define characters and length for the ticket ID
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -132,6 +133,7 @@ export async function generateDMTicket(recipent, sender) {
     });
 }
 
+// Supporting function to check if the given ticket ID for a direct message has already been used
 async function checkExistingDMID(ticketID, recipent, sender) {
     const db = getDatabase(fbConfig);
     let sanitizedSender;
