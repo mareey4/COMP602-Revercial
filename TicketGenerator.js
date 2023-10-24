@@ -1,35 +1,35 @@
 import { fbConfig } from './firebase';
-import { getDatabase, ref, set, onValue, remove } from 'firebase/database'
+import { getDatabase, ref as databaseRef, set, onValue, remove, child, get } from 'firebase/database'
 
 // Function to generate a random ticket ID
 export async function generateTicketID(pageType, email) {
-        // Define characters and length for the ticket ID
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        const length = 8;
-        let ticketID = '';
-        let usedID = true;
+    // Define characters and length for the ticket ID
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const length = 8;
+    let ticketID = '';
+    let usedID = true;
 
-        // Generate a random ticket ID
-        return new Promise(async (resolve) => {
-            // Continuously loop until a unique ticket ID is generated
-            while(usedID) {
-                for(let i = 0; i < length; i++) {
-                    const randIndex = Math.floor(Math.random() * characters.length);
-                    ticketID += characters.charAt(randIndex);
-                }
-
-                // Checks if generated ticket ID has already been used
-                usedID = await checkExistingTicketID(ticketID, pageType, email);
-
-                if(usedID) {
-                    ticketID = '';
-                }
+    // Generate a random ticket ID
+    return new Promise(async (resolve) => {
+        // Continuously loop until a unique ticket ID is generated
+        while(usedID) {
+            for(let i = 0; i < length; i++) {
+                const randIndex = Math.floor(Math.random() * characters.length);
+                ticketID += characters.charAt(randIndex);
             }
 
-            resolve(ticketID); // Resolve the promise with the generated ticket ID
-            return;
-        });
-    }
+            // Checks if generated ticket ID has already been used
+            usedID = await checkExistingTicketID(ticketID, pageType, email);
+
+            if(usedID) {
+                ticketID = '';
+            }
+        }
+
+        resolve(ticketID); // Resolve the promise with the generated ticket ID
+        return;
+    });
+}
 
 // Function to check if a ticket ID exists in Firebase database
 export async function checkExistingTicketID(ticketID, pageType, email) {
@@ -83,7 +83,7 @@ export async function checkExistingTicketID(ticketID, pageType, email) {
         
         const result = await Promise.all(promises);
         validID = result.some((exists) => exists);
-    } else if(pageType === "Profile") {
+    } else if(pageType === "AddFriend") {
         if(email !== undefined) {
             let sanitizedEmail;
 
@@ -101,4 +101,49 @@ export async function checkExistingTicketID(ticketID, pageType, email) {
     }
     
     return validID;
+}
+
+export async function generateDMTicket(recipent, sender) {
+    // Define characters and length for the ticket ID
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const length = 8;
+    let ticketID = '';
+    let usedID = true;
+
+    // Generate a random ticket ID
+    return new Promise(async (resolve) => {
+        // Continuously loop until a unique ticket ID is generated
+        while(usedID) {
+            for(let i = 0; i < length; i++) {
+                const randIndex = Math.floor(Math.random() * characters.length);
+                ticketID += characters.charAt(randIndex);
+            }
+
+            // Checks if generated ticket ID has already been used
+            usedID = await checkExistingDMID(ticketID, recipent, sender);
+
+            if(usedID) {
+                ticketID = '';
+            }
+        }
+
+        resolve(ticketID); // Resolve the promise with the generated ticket ID
+        return;
+    });
+}
+
+async function checkExistingDMID(ticketID, recipent, sender) {
+    const db = getDatabase(fbConfig);
+    let sanitizedSender;
+
+    if(sender.email.includes(".")) {
+        sanitizedSender = sender.email.replaceAll(".", ",");
+    } else {
+        sanitizedSender = sender.email;
+    }
+
+    const refDM = databaseRef(db, 'Inbox/' + sanitizedSender + '/DM/' + recipent.username);
+    const refTicket = child(refDM, ticketID);
+    const snapshot = await get(refTicket);
+    return snapshot.exists();
 }
