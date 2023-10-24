@@ -26,6 +26,7 @@ export async function saveUserData(newUser) {
     await createInbox(sanitizedEmail);
 }
 
+// Supporting function to generate the new user's friends list in the database
  async function createFriendsList(email) {
     const db = getDatabase(fbConfig);
     let sanitizedEmail;
@@ -43,6 +44,7 @@ export async function saveUserData(newUser) {
     });
 }
 
+// Supporting function to generate the new user's intbox in the database
 async function createInbox(email) {
     const db = getDatabase(fbConfig);
     let sanitizedEmail;
@@ -70,8 +72,15 @@ async function createInbox(email) {
     set(refDMs, {
         Holder: "Do not remove"
     });
+
+    const refDMs = databaseRef(db, 'Inbox/' + sanitizedEmail + "/DM");
+
+    set(refDMs, {
+        Holder: "Do not remove"
+    });
 }
 
+// Function to save the user's qurey support info to the database
 export async function saveSupportInfo(query) {
     const db = getDatabase(fbConfig);
     const refSupport = databaseRef(db, 'Support/' + query.subject + '/' + query.ticketID);
@@ -84,6 +93,7 @@ export async function saveSupportInfo(query) {
     });
 } 
 
+// Function to save the user's query support attachments to the database
 export async function saveSupportAttachments(subject, ticketID, file) {
     const storage = getStorage(fbConfig);
     const refSupport = storageRef(storage, 'Support/' + subject + '/' + ticketID + '/' + file.name);
@@ -91,6 +101,7 @@ export async function saveSupportAttachments(subject, ticketID, file) {
     await uploadBytes(refSupport, file);
 } 
 
+// Function to save the user's image file for a post to the storage
 export async function savePostAttachment(username, postID, file) {
     const storage = getStorage(fbConfig);
     const refPost = storageRef(storage, 'Posts/' + username + '/' + postID + '/' + file.name);
@@ -99,6 +110,7 @@ export async function savePostAttachment(username, postID, file) {
     return getDownloadURL(refPost);
 }
 
+// Function to save the user's info for a post to the database
 export async function savePostMetadata(username, postId, caption, mediaUrl) {
     const db = getDatabase(fbConfig);
     const postRef = databaseRef(db, 'Posts/' + username + '/' + postId);
@@ -112,6 +124,7 @@ export async function savePostMetadata(username, postId, caption, mediaUrl) {
     await set(postRef, postData);
 }
 
+// Function to check if the ticket ID has already been used for a support query
 export async function checkExistingTicketID(ticketID) {
     const db = getDatabase(fbConfig);
     const topicOptions = [
@@ -138,6 +151,7 @@ export async function checkExistingTicketID(ticketID) {
     return validID;
 }
 
+// Function to set the user's profile picture to their selected image file
 export async function setProfilePic(user, file) {
     const storage = getStorage(fbConfig);
     let sanitizedEmail;
@@ -404,6 +418,7 @@ export async function getFriendsList(email) {
     });
 }
 
+// Function to check if the target user is already oin the currenct user's friends list
 export async function checkFriends(currentEmail, targetEmail) {
     const friends = await getFriendsList(currentEmail);
     let sanitizedTarget = "";
@@ -487,6 +502,7 @@ export async function removeFriend(currentUser, targetUser) {
     });
 }
 
+// Function to get the user's info from the database based on the given email
 export async function getUserViaEmail(userEmail) {
     const db = getDatabase(fbConfig);
     const refEmail = databaseRef(db, 'Users');
@@ -523,6 +539,7 @@ export async function getUserViaEmail(userEmail) {
     });
 }
 
+// Function to get the user's info from the database based on the given username
 export async function getUserViaUsername(username) {
     const db = getDatabase(fbConfig);
     const reference = databaseRef(db, 'Users');
@@ -558,7 +575,7 @@ export async function getUserViaUsername(username) {
     });
 }
 
-
+// Function to delete the given user's account and info from the database
 export async function deleteAccount(user) {
     const db = getDatabase(fbConfig);
     const refUsers = databaseRef(db, 'Users');
@@ -574,6 +591,7 @@ export async function deleteAccount(user) {
     });
 }
 
+// Function to validate creditials for logging in
 export async function login(id, password) {
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z.-]{2,}$/;
     let user;
@@ -598,6 +616,7 @@ export async function login(id, password) {
     });
 }
 
+// Function to get the all users from the data base and their info
 export async function getAllUsers() {
     const db = getDatabase(fbConfig);
     const refUsers = ref(db, 'Users');
@@ -628,6 +647,7 @@ export async function getAllUsers() {
     return users;
 }
 
+// Function to validate the format of the given name
 export async function validateName(name) {
     const nameRegex = /^[a-zA-Z\s-]+$/;
     let valid = false;
@@ -644,6 +664,7 @@ export async function validateName(name) {
     });
 }
 
+// Function to validate the given date of birth
 export async function validateDOB(dob) {
     const dateArray = dob.split("-");
     const givenDOB = new Date(dateArray[0], (dateArray[1] - 1), dateArray[2]);
@@ -696,6 +717,7 @@ export async function validateDOB(dob) {
         }
     
         if(validDay && validMonth && validYear) {
+            // Takes the given birth date and validates the user's age
             validDOB = await validateAge(givenDOB, currentDate);
         }
     
@@ -704,6 +726,7 @@ export async function validateDOB(dob) {
     });
 }
 
+// Function to validate the user's age based on their given date of birth
 export async function validateAge(givenDOB, currentDate) {
     let validAge = false;
 
@@ -725,6 +748,7 @@ export async function validateAge(givenDOB, currentDate) {
     });
 }
 
+// Function to validate the format of the given email 
 export async function validateEmail(email) {
     let validEmail = false;
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z.-]{2,}$/;
@@ -739,6 +763,7 @@ export async function validateEmail(email) {
     });
 }
 
+// Function to validate the format of the given username
 export async function validateUsername(username) {
     let validUsername = false;
     const usernameRegex = /^[a-zA-Z0-9_]*$/;
@@ -755,6 +780,7 @@ export async function validateUsername(username) {
     });
 }
 
+// Function to validate the format of the given password
 export async function validatePassword(password) {
     let validPassword = false;
     const uppercase = /[A-Z]/;
@@ -778,6 +804,7 @@ export async function validatePassword(password) {
     });
 }
 
+// Function to get the current date as a string
 export function getCurrentDate() {
     const today = new Date();
     const year = today.getFullYear();
@@ -792,24 +819,28 @@ export function getCurrentDate() {
     }
   
     return `${year}-${month}-${day}`;
-  }
+}
 
+// Function to validate the given date
 export function isValidDate(dateString) {
     const selectedDate = new Date(dateString);
     const currentDate = new Date();
     return selectedDate >= currentDate;
-  }
-  
-  export function validateAddress(address) {
+}
+
+// Function to validate the given address
+export function validateAddress(address) {
     const addressRegex = /^[a-zA-Z0-9\s,-]+$/;
     return addressRegex.test(address);
-  }
-  
-  export function validateDescription(description) {
-    return description.length <= 100;
-  }
+}
 
-  export async function saveUserBio(email, bio) {
+// Function to validate the given description
+export function validateDescription(description) {
+    return description.length <= 100;
+}
+
+// Function to validate the given user bio
+export async function saveUserBio(email, bio) {
     const db = getDatabase(fbConfig);
     const sanitizedEmail = email.replaceAll(".",",");
     const userRef = ref(db, 'Users/' + sanitizedEmail); 
@@ -823,9 +854,10 @@ export function isValidDate(dateString) {
       console.error('Error saving bio:', error);
       throw error; 
     }
-  }
+}
 
-  export function isFutureDate(dateString) {
+// Function to check if the given date is after the current date
+export function isFutureDate(dateString) {
     const selectedDate = new Date(dateString);
     const currentDate = new Date();
     console.log("Selected Date:", selectedDate);
@@ -833,15 +865,17 @@ export function isValidDate(dateString) {
     return selectedDate >= currentDate;
 }
 
+// Function to delete the given user's media file of a post from the storage
 export async function deletePostMediaFromStorage(username, postId, fileName) {
     console.log("Username:", username); // Logging for debugging
     console.log("Post ID:", postId); // Logging for debugging
-console.log(fileName);
+    console.log(fileName);
     const storage = getStorage(fbConfig);
     const postMediaRef = storageRef(storage, `Posts/${username}/${postId}/${fileName}`);
     await deleteObject(postMediaRef);  // This deletes the entire directory for the post, removing all media associated with it.
 }
 
+// Function to delete the given user's post info from the database
 export async function deletePost(username, postId, fileName) {
     await deletePostMediaFromStorage(username, postId, fileName);
     
@@ -850,7 +884,7 @@ export async function deletePost(username, postId, fileName) {
     await remove(postRef);
 }
 
-
+// Function to get all posts and their info for the given user
 export async function getPostsForUser(username) {
     const db = getDatabase(fbConfig);
     const postRef = databaseRef(db, 'Posts/' + username);
@@ -877,6 +911,7 @@ export async function getPostsForUser(username) {
     return postsArray;
 }
 
+// Function to get the media file for the given user's post
 export async function getPostImage(username, ticketID, filename) {
     const storage = getStorage(fbConfig);
     const refFile = storageRef(storage, 'Posts/' + username + '/' + ticketID + '/' + filename);
