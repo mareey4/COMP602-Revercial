@@ -19,9 +19,10 @@ import {
   savePostAttachment,
   savePostMetadata,
   getUserViaEmail,
-  deletePostMediaFromStorage,
   deletePost,
   getPostsForUser,
+  sendDM,
+  getDM,
 } from "./validation";
 import "../Front End/Profile.css";
 import "../Front End/NavBar.css";
@@ -41,11 +42,10 @@ function Profile() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navigate = useNavigate();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [profilePicUrls, setProfilePicUrls] = useState<string[]>([]);
-  const [friendsPFPUrls, setFriendsPFPUrls] = useState<string[]>([]);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [addButtonDisplay, setAddButtonDisplay] = useState(false);
   const [removeButtonDisplay, setRemoveButtonDisplay] = useState(false);
 
@@ -63,6 +63,18 @@ function Profile() {
   const [caption, setCaption] = useState(""); // to store the caption
   const [posts, setPosts] = useState<Post[]>([]);
   const [showOptionsFor, setShowOptionsFor] = useState<string | null>(null);
+
+  // States for friends list
+  const [profilePicUrls, setProfilePicUrls] = useState<string[]>([]);
+  const [friendsList, setFriendsList] = useState<User[]>([]);
+  const [friendsPFPUrls, setFriendsPFPUrls] = useState<string[]>([]);
+
+  // States for messaging
+  const [sentMessages, setSentMessages] = useState<string[]>([]);
+  const [recievedMessages, setRecieved] = useState<string[]>([]);
+  const [openChat, setOpenChat] = useState(false);
+  const [newMessage, setNewMessage] = useState("");
+  const [recipientUser, setRecipient] = useState<User>();
 
   const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null);
   const [isLiked, setIsLiked] = useState<string[]>([]);
@@ -86,8 +98,15 @@ function Profile() {
 
   const maxCharacterLimit = 500;
 
+  const chatBoxRef = useRef(null);
   const searchContainerRef = useRef(null);
+
+  // Variables for target user information
   let friends: User[];
+  let friendsPFPs: string[];
+  let sentDMs: string[];
+  let recievedDMs: string[];
+  let userPosts: Post[];
   let pfpName = "Null";
 
   if (targetUser.profilePic !== pfpName) {
@@ -98,31 +117,36 @@ function Profile() {
   useEffect(() => {
     async function loadProfilePic() {
       const url = await getProfilePic(targetEmail, pfpName);
+      await loadFriends();
+
       if (url) {
         setProfilePicUrl(url);
+      }
+
+      if (friends) {
+        await loadFriendsPFP();
+      }
+
+      if (friends) {
+        await setFriendsList(friends);
+      }
+
+      if (friendsPFPs) {
+        await setFriendsPFPUrls(friendsPFPs);
       }
     }
 
     loadProfilePic();
   }, [targetEmail, pfpName]);
 
-  useEffect(() => {
-    async function loadFriends() {
-      friends = await getFriendsList(user.email);
+  // Function to retrieve the profiles for the friends list
+  async function loadFriends() {
+    friends = await getFriendsList(user.email);
+  }
 
-      if (friends.length > 0) {
-        loadFriendsPFP();
-      }
-    }
-
-    loadFriends();
-  }, []);
-
+  // Function to retrieve the profile pictures of friends list
   async function loadFriendsPFP() {
-    const friendsPFPs = await getFilteredUsersPFP(friends);
-    // console.log(friendsPFPs);
-
-    setFriendsPFPUrls(friendsPFPs);
+    friendsPFPs = await getFilteredUsersPFP(friends);
   }
 
   useEffect(() => {
@@ -145,6 +169,26 @@ function Profile() {
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    // Add a click event listener for the chat box
+    const handleClickOutside = (event: { target: any }) => {
+      if (
+        openChat &&
+        chatBoxRef.current &&
+        !(chatBoxRef.current as HTMLElement).contains(event.target)
+      ) {
+        // Clicked outside of the chat box, close it
+        setOpenChat(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [openChat]);
 
   useEffect(() => {
     async function fetchPosts() {
@@ -282,13 +326,13 @@ function Profile() {
   };
 
   const handleBioChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    // Update the bio state when the input changes
     setBio(event.target.value);
   };
 
   const handleSaveBio = () => {
     // Call the saveUserBio function to save the user's bio
     saveUserBio(user.email, bio);
+
     alert("Bio saved successfully!");
   };
 
@@ -350,7 +394,7 @@ function Profile() {
 
     for (const post of posts) {
       if (post.postId === postId) {
-        fileName = post.mediaUrl.split("%2F").pop().split("?")[0];
+        fileName = post.fileName;
         break;
       }
     }
@@ -404,10 +448,79 @@ function Profile() {
     setIsEditingBio((prevState) => !prevState); // Toggle the isEditingBio state
   };
 
+  // Function to handle chat box display
+  const handleChatClick = async (friend: User) => {
+    setOpenChat(true);
+    setRecipient(friend);
+    await fetchSentMessages(friend);
+    await fetchRecievedMessages(friend);
+
+    if (sentDMs) {
+      await setSentMessages(sentDMs);
+    }
+
+    if (recievedDMs) {
+      await setRecieved(recievedDMs);
+    }
+  };
+
+  // Function to retrieve sent messages to the target user
+  async function fetchSentMessages(friend: User) {
+    sentDMs = await getDM(user, friend);
+  }
+
+  // Function to retrieve messages from target user
+  async function fetchRecievedMessages(friend: User) {
+    recievedDMs = await getDM(friend, user);
+  }
+
+  // Function for handling the send button
+  const handleMessage = async () => {
+    // Handle sending a new message
+    if (newMessage.trim() === "") {
+      return;
+    }
+
+    // Save the new message to the target user's inbox in the database
+    await sendDM(recipientUser, user, newMessage);
+
+    // Clear the input field and close chat box
+    setNewMessage("");
+    setOpenChat(false);
+  };
+
+  // Function to handle chat message rendering
+  function renderChatMessages() {
+    const messages = [];
+
+    if (friendsList) {
+      for (
+        let i = 0;
+        i < Math.max(sentMessages.length, recievedMessages.length);
+        i++
+      ) {
+        if (sentMessages[i]) {
+          messages.push(
+            <div key={`sent-${i}`} className="sent-message">
+              <p>{sentMessages[i]}</p>
+            </div>
+          );
+        }
+
+        if (recievedMessages[i]) {
+          messages.push(
+            <div key={`received-${i}`} className="received-message">
+              <p>{recievedMessages[i]}</p>
+            </div>
+          );
+        }
+      }
+    }
+    return messages;
+  }
+
   return (
-    <div className="main-wrapper">
-      {" "}
-      {/* <-- This is the new wrapping div */}
+    <div className="temp">
       <div ref={searchContainerRef} className="search-container">
         {/* Search Bar */}
         <input
@@ -532,13 +645,11 @@ function Profile() {
                 Remove Friend
               </button>
             </div>
-
-            {!isEditingBio && (
+            {!isEditingBio && targetUser.bio && (
               <div className="bio-display">
                 <p>{targetUser.bio}</p>
               </div>
             )}
-
             <div className="pencil-icon" onClick={handleBioEditToggle}>
               &#128393;
             </div>
@@ -548,7 +659,7 @@ function Profile() {
                 <h2>Bio</h2>
                 <textarea
                   className="bio-textarea"
-                  value={targetUser.bio}
+                  value={bio}
                   onChange={handleBioChange}
                   placeholder="Type your bio here"
                   maxLength={maxCharacterLimit}
@@ -557,6 +668,49 @@ function Profile() {
                   Character Count: {bio.length}/{maxCharacterLimit}
                 </div>
                 <button onClick={handleSaveBio}>Save Bio</button>
+              </div>
+            )}
+
+            <div className="friends-display">
+              <ul>
+                {friendsList.map((targetUser, index) => (
+                  <li
+                    key={index}
+                    onClick={() => {
+                      handleChatClick(targetUser);
+                    }}
+                  >
+                    <div className="friends-entry">
+                      <img
+                        src={friendsPFPUrls[index]}
+                        alt="Profile"
+                        className="friends-pic"
+                      />
+                      <div className="friends-details">
+                        <p>{targetUser.username}</p>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {openChat && (
+              <div className="chat-box">
+                <div className="chat-messages">
+                  <div className="scrollable-messages">
+                    {renderChatMessages()}
+                  </div>
+                </div>
+                <div className="chat-input">
+                  <input
+                    type="text"
+                    placeholder="Type your message..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                  />
+                  <button onClick={handleMessage}>Send</button>
+                </div>
               </div>
             )}
           </div>
