@@ -8,12 +8,15 @@ import {
   validateDescription,
 } from "../Back End/validation";
 import { generateTicketID } from "../Back End/TicketGenerator";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import Query from "../Back End/Query";
 
 // SupportComponent for App
 function Support() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const user = location.state?.user;
 
   // State for sidebar toggle
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -186,6 +189,27 @@ function Support() {
     }
   };
 
+  const handleProfileLink = async () => {
+    navigate("/profile", { state: { user: user } });
+  };
+
+  const handleEventsLink = async () => {
+    navigate("/create-events", { state: { user: user } });
+  };
+
+  const handleJoinEventsLink = (event: React.MouseEvent) => {
+    event.preventDefault();
+    console.log("Navigating to JoinEvents with user:", user);
+    navigate("/join-events", { state: { user: user } });
+  };
+
+  // Function to handle user logout (not fully implemented).
+  const handleLogout = () => {
+    if (user) {
+      user.loginStatus = false; // Update the login status (Note: This might need further implementation).
+    }
+  };
+
   return (
     // Navigation bar and JSX component with steps to create the event
     <div className={`body ${sidebarOpen ? "sidebar-open" : ""}`}>
@@ -201,19 +225,27 @@ function Support() {
         <h2></h2>
         <ul>
           <li>
-            <Link to="/profile">Profile</Link>
+            <Link to="/profile" onClick={handleProfileLink}>
+              Profile
+            </Link>
           </li>
           <li>
-            <Link to="/create-events">Create Event</Link>
+            <Link to="/create-events" onClick={handleEventsLink}>
+              Create Event
+            </Link>
           </li>
           <li>
-            <Link to="/Privacy">Privacy Settings</Link>
+            <Link to="/join-events" onClick={handleJoinEventsLink}>
+              Join Events{" "}
+            </Link>
           </li>
           <li>
             <Link to="/Support">Support Page</Link>
           </li>
           <li>
-            <Link to="/Login">Log out</Link>{" "}
+            <Link to="/Login" onClick={handleLogout}>
+              Log out
+            </Link>{" "}
           </li>
         </ul>
       </div>

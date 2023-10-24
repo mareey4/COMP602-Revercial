@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { getDatabase, ref, get, onValue, set } from "firebase/database";
 import { fbConfig } from "./firebase";
 import Events from "./Events";
-import { getUserViaEmail } from "./validation";
+import { getUserViaEmail, getProfilePic } from "./validation";
 import "../Front End/JoinEvents.css";
 
 type Event = InstanceType<typeof Events>;
@@ -21,6 +21,8 @@ function Joinevents() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = location.state?.user;
+
+  const [isLoading, setIsLoading] = useState(true);
 
   console.log("Location object:", location);
   console.log("User:", user);
@@ -98,6 +100,10 @@ function Joinevents() {
   };
 
   const handleEventsLink = () => {
+    navigate("/create-events", { state: { user: user } });
+  };
+
+  const handleProfileLink = async () => {
     navigate("/profile", { state: { user: user } });
   };
 
@@ -169,52 +175,33 @@ function Joinevents() {
     setShowPopUp(false);
   };
 
+  const handleJoinEventsLink = (event: React.MouseEvent) => {
+    event.preventDefault();
+    console.log("Navigating to JoinEvents with user:", user);
+    navigate("/join-events", { state: { user: user } });
+  };
+
   return (
-    <div className={`profile-container ${sidebarOpen ? "sidebar-open" : ""}`}>
-      <div className="sidebar-toggle" onClick={toggleSidebar}>
-        <div className={`toggle-lines ${sidebarOpen ? "open" : ""}`}>
-          &#9776;
-        </div>
-      </div>
-
-      <div className="sidebar">
-        <h2></h2>
-        <ul>
-          <li>
-            <Link to="/Create-Events" onClick={handleEventsLink}>
-              Create Event
-            </Link>
-          </li>
-          <li>
-            <Link to="Join-Events">Join Events</Link>
-          </li>
-          <li>
-            <Link to="/Privacy">Privacy Settings</Link>
-          </li>
-          <li>
-            <Link to="/Support">Support Page</Link>
-          </li>
-          <li>
-            <Link to="/Login" onClick={handleLogout}>
-              Log out
-            </Link>
-          </li>
-        </ul>
-      </div>
-
+    <div>
       <div className="container">
-        <h1 className="h1"> Join an Event</h1>
-
-        <div className="event-grid">
-          {eventList.map((event, index) => (
-            <div
-              key={index}
-              className="event"
-              onClick={() => handleEventClick(event)}
-            >
-              <h2>{event.eventType}</h2>
+        <div className="container h1">
+          {" "}
+          <h1>Join an Event</h1>
+          {isLoading ? (
+            <p>Loading...</p>
+          ) : (
+            <div className="event-grid">
+              {eventList.map((event, index) => (
+                <div
+                  key={index}
+                  className="event"
+                  onClick={() => handleEventClick(event)}
+                >
+                  <h2>{event.eventType}</h2>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
 
         {showPopUp && (
@@ -261,6 +248,45 @@ function Joinevents() {
             </div>
           </div>
         )}
+        <div
+          className={`profile-container ${sidebarOpen ? "sidebar-open" : ""}`}
+        >
+          <div className="sidebar-toggle" onClick={toggleSidebar}>
+            <div className={`toggle-lines ${sidebarOpen ? "open" : ""}`}>
+              &#9776;
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="sidebar">
+            <h2></h2>
+            <ul>
+              <li>
+                <Link to="/profile" onClick={handleProfileLink}>
+                  Profile
+                </Link>
+              </li>
+              <li>
+                <Link to="/create-events" onClick={handleEventsLink}>
+                  Create Event
+                </Link>
+              </li>
+              <li>
+                <Link to="/join-events" onClick={handleJoinEventsLink}>
+                  Join Events{" "}
+                </Link>
+              </li>
+              <li>
+                <Link to="/Support">Support Page</Link>
+              </li>
+              <li>
+                <Link to="/Login" onClick={handleLogout}>
+                  Log out
+                </Link>{" "}
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );
