@@ -50,6 +50,8 @@ Revercial is a groundbreaking platform built to foster real-world connections an
 * [![Firebase][Firebase.js]][Firebase-url]
 * [![HTML][HTML.js]][HTML-url]
 * [![CSS][CSS.js]][CSS-url]
+* [![React_Testing_Library]][React_Testing_Library.js][React_Testing_Library-url]
+* [![Jest]][Jest.js][Jest-url]
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -93,3 +95,8 @@ This is an example of how to list things you need to use the software and how to
 [HTML-url]: https://developer.mozilla.org/en-US/docs/Web/HTML
 [CSS.js]: https://img.shields.io/badge/CSS-20232A?style=for-the-badge&logo=css3&logoColor=1572B6
 [CSS-url]: https://developer.mozilla.org/en-US/docs/Web/CSS
+[React_Testing_Library.js]: https://img.shields.io/badge/React%20Testing%20Library-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
+[React_Testing_Library-url]: https://testing-library.com/docs/react-testing-library/intro/
+[Jest.js]: https://img.shields.io/badge/Jest-20232A?style=for-the-badge&logo=jest&logoColor=15C213
+[Jest-url]: https://jestjs.io/
+
