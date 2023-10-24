@@ -1,3 +1,4 @@
+// Import necessary modules and components
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../Front End/NavBar.css";
@@ -13,26 +14,19 @@ import {
 } from "./validation";
 import Events from "./Events";
 
+// Define the CreateEvents component
 function CreateEvents() {
+  // Initialize React Router's navigation function
   const navigate = useNavigate();
 
   // State for sidebar toggle
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // List of available event choices
   const eventChoices = [
-    "Gala",
-    "Meeting",
-    "Networking",
-    "Non-Profit Event",
-    "Open House",
-    "Party",
-    "Professional Event",
-    "Reunion",
-    "Sporting Event",
-    "Trip",
-    "Wedding",
-    "Workshop",
-    "Other",
+    "Gala", "Meeting", "Networking", "Non-Profit Event", "Open House",
+    "Party", "Professional Event", "Reunion", "Sporting Event", "Trip",
+    "Wedding", "Workshop", "Other",
   ];
 
   // Function to toggle the sidebar
@@ -50,7 +44,7 @@ function CreateEvents() {
     location: "",
     description: "",
   });
-  const [continueButtonDisabled, setContinueButtonDisabled] = useState(true); // State for disabling the "Continue" button
+  const [continueButtonDisabled, setContinueButtonDisabled] = useState(true);
   const [addressValid, setAddressValid] = useState(true);
 
   // State for the created event
@@ -58,6 +52,7 @@ function CreateEvents() {
   const location = useLocation();
   const user = location.state?.user;
 
+  // Function to handle navigation to the user's profile
   const handleProfileLink = async () => {
     navigate("/profile", { state: { user: user } });
   };
@@ -99,6 +94,7 @@ function CreateEvents() {
       // Generate a unique ticket ID
       const ticketID = await generateTicketID("Events", undefined);
 
+      // Create a new event object
       const newEvent = new Events(
         eventDetails.date,
         eventDetails.description,
@@ -107,14 +103,13 @@ function CreateEvents() {
         selectedEventType
       );
       newEvent.eventType = selectedEventType;
+
       // Access Firebase database
       const db = getDatabase(fbConfig);
       const eventTypePath = selectedEventType.replace(/ /g, "_");
       const eventPath = `Events/${eventTypePath}/${ticketID}`;
       const eventRef = ref(db, eventPath);
 
-      console.log("Event Path:", eventPath);
-      console.log("Event Data:", newEvent);
       // Set event details in the database
       set(eventRef, newEvent);
 
@@ -155,17 +150,19 @@ function CreateEvents() {
     setStep(step - 1);
   };
 
+  // Function to handle navigation to the user's events
   const handleEventsLink = () => {
     navigate("/profile", { state: { user: user } });
   };
 
+  // Function to handle navigation to join events (prevents default link behavior)
   const handleJoinEventsLink = (event: React.MouseEvent) => {
     event.preventDefault();
     console.log("Navigating to JoinEvents with user:", user);
     navigate("/join-events", { state: { user: user } });
   };
 
-  // Function to handle user logout (not fully implemented).
+  // Function to handle user logout (not fully implemented)
   const handleLogout = () => {
     if (user) {
       user.loginStatus = false; // Update the login status (Note: This might need further implementation).
@@ -173,7 +170,7 @@ function CreateEvents() {
   };
 
   return (
-    // Navigation bar and JSX component with steps to create the event
+    // JSX component with steps to create the event
     <div className={`body ${sidebarOpen ? "sidebar-open" : ""}`}>
       {/* Sidebar Toggle Button */}
       <div className="sidebar-toggle" onClick={toggleSidebar}>
@@ -227,98 +224,4 @@ function CreateEvents() {
               >
                 <option value="">Select an event type</option>
                 {eventChoices.map((event, index) => (
-                  <option key={index} value={event}>
-                    {event}
-                  </option>
-                ))}
-              </select>
-              <div className="create-button-container">
-                <button
-                  className="create-button"
-                  onClick={() => setStep(2)}
-                  disabled={!selectedEventType}
-                >
-                  Continue
-                </button>
-              </div>
-            </>
-          )}
-          {step === 2 && (
-            <>
-              <h2 style={{ color: "#293728" }}>When is the event?</h2>
-              <input
-                type="date"
-                name="date"
-                value={eventDetails.date}
-                onChange={handleInputChange}
-                min={getCurrentDate()}
-              />
-
-              <div className="create-button-container">
-                <button className="back-button" onClick={handleBack}>
-                  Back
-                </button>
-                <button className="create-button" onClick={() => setStep(3)}>
-                  Continue
-                </button>
-              </div>
-            </>
-          )}
-          {step === 3 && (
-            <>
-              <h2 style={{ color: "#293728" }}>Where is the event?</h2>
-              <input
-                type="text"
-                name="location"
-                value={eventDetails.location}
-                onChange={handleInputChange}
-                placeholder="Enter location..."
-              />
-              <div className="create-button-container">
-                <button className="back-button" onClick={handleBack}>
-                  Back
-                </button>
-                <button
-                  className="create-button"
-                  onClick={() => setStep(4)}
-                  disabled={!eventDetails.location || !addressValid}
-                >
-                  Continue
-                </button>
-              </div>
-            </>
-          )}
-          {step === 4 && (
-            <>
-              <h2 style={{ color: "#293728" }}>
-                Describe your event (max 500 characters)
-              </h2>
-              <textarea
-                name="description"
-                value={eventDetails.description}
-                onChange={handleInputChange}
-                maxLength={501}
-                rows={5}
-                style={{ width: "92%", height: "100px" }}
-              />
-              <div className="create-button-container">
-                <button className="back-button" onClick={handleBack}>
-                  Back
-                </button>{" "}
-                <button
-                  className="create-button"
-                  onClick={handleCreateEvent}
-                  disabled={!eventDetails.description}
-                >
-                  Create Event
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default CreateEvents;
+                  <option key={index} value={event
