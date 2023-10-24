@@ -475,9 +475,9 @@ height: fit-content;
 }
 
 .chat-box {
-  position: fixed;
-  bottom: 0;
-  right: 0;
+  position: absolute;
+  top: 500px; /* Adjust the distance from the bottom as needed */
+  right: 0px; /* Adjust the distance from the right as needed */
   width: 300px;
   background-color: #fff;
   border: 1px solid #ccc;
