@@ -30,7 +30,14 @@ import "../Front End/NavBar.css";
 import { useLocation } from "react-router-dom";
 import User from "./user";
 import DM from './dm';
-import Post from './post';
+
+type Post = {
+  mediaUrl: string;
+  caption: string;
+  postId: string;
+  fileName: string;
+  isEditing?: boolean;
+};
 
 function Profile() {
   const navigate = useNavigate();
@@ -371,7 +378,7 @@ function Profile() {
 
   const handleProfilePicInputChange = async (
     e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+    ) => {
     if (user.email == targetUser.email) {
       const file = e.target.files && e.target.files[0];
 
@@ -430,18 +437,15 @@ function Profile() {
     try {
       const postId = Date.now().toString();
 
-      await savePostAttachment(
+      const mediaUrl = await savePostAttachment(
         user.username,
         postId,
         selectedMediaFile
       );
 
-      if(selectedMediaFile) {
-        await savePostMetadata(user.username, postId, caption, selectedMediaFile.name);
-      }
+      await savePostMetadata(user.username, postId, caption, mediaUrl);
 
-      const userPosts = await getPostsForUser(targetUser.username);
-      setPosts(userPosts);
+      setPosts([...posts, { mediaUrl, caption, postId, fileName }]);
 
       setShowPostEditor(false);
       alert("Post saved successfully!");
@@ -454,28 +458,36 @@ function Profile() {
   const handleShowOptions = (e: React.MouseEvent, post: Post) => {
     e.stopPropagation(); // Prevents any parent handlers from being executed
 
-    if (showOptionsFor === post.postID) {
+    if (showOptionsFor === post.postId) {
       setShowOptionsFor(null); // hide the options if they are already shown
     } else {
-      setShowOptionsFor(post.postID); // otherwise, show them
+      setShowOptionsFor(post.postId); // otherwise, show them
     }
   };
 
   const handleDeletePost = async (username: string, postId: string) => {
     //loop through array and look for matching postid then when it matches, take the filename of that object
     //that is the filename that you pass in await deletePost(user.username, postId, fileName); // Backend deletion
-    if (user.email === targetUser.email) {
-      try {
-        for(const post of posts) {
-          if(post.postID === postId) {
-            // await deletePost(user.username, postId, post.file.name); // Backend deletion
-            // await deletePostMediaFromStorage(post);
-          }
-        }
+    console.log("Delete button clicked for post: ${postId}");
+    let fileName: string | null = null;
 
+    for (const post of posts) {
+      if (post.postId === postId) {
+        fileName = post.fileName;
+        break;
+      }
+    }
+    if (!fileName) {
+      console.error("File name not found for post:", postId);
+      return;
+    }
+
+    if (user.email !== targetUser.email) {
+      try {
+        await deletePost(user.username, postId, fileName); // Backend deletion
         setPosts((prevPosts) =>
-          prevPosts.filter((post) => post.postID !== postId)
-        ); // Local state update
+          prevPosts.filter((post) => post.postId !== postId)
+        );
 
         alert("Post deleted successfully!");
       } catch (error) {
@@ -484,10 +496,6 @@ function Profile() {
       }
     }
   };
-
-  async function getFileName(file: File) {
-    return file.name;
-  }
 
   const handleEditClick = (postId: string, currentCaption: string) => {
     if (editingPostId === postId) {
@@ -501,7 +509,7 @@ function Profile() {
 
   const handleSaveEditedCaption = (postId: string) => {
     const updatedPosts = posts.map((post) =>
-      post.postID === postId ? { ...post, caption: editedCaption } : post
+      post.postId === postId ? { ...post, caption: editedCaption } : post
     );
     setPosts(updatedPosts);
     setEditingPostId(null);
@@ -717,7 +725,7 @@ function Profile() {
           {posts.map((post, index) => (
             <div key={index} className="post">
               <img
-                src={post.file}
+                src={post.mediaUrl}
                 alt="Post"
                 className="posts-container img"
               />
@@ -731,13 +739,13 @@ function Profile() {
                 </button>
               </div>
 
-              {editingPostId === post.postID ? (
+              {editingPostId === post.postId ? (
                 <>
                   <textarea
                     value={editedCaption}
                     onChange={(e) => setEditedCaption(e.target.value)}
                   />
-                  <button onClick={() => handleSaveEditedCaption(post.postID)}>
+                  <button onClick={() => handleSaveEditedCaption(post.postId)}>
                     Save
                   </button>
                 </>
@@ -754,11 +762,11 @@ function Profile() {
                 >
                   •••
                 </div>
-                {showOptionsFor === post.postID && (
+                {showOptionsFor === post.postId && (
                   <div className="post-dropdown">
                     <button
                       onClick={() =>
-                        handleDeletePost(user.username, post.postID)
+                        handleDeletePost(user.username, post.postId)
                       }
                     >
                       Delete
@@ -803,283 +811,3 @@ function Profile() {
 }
 
 export default Profile;
-
-
-// import { useEffect, useState, useRef, ChangeEvent, SetStateAction } from "react";
-// import { Link, useNavigate, useLocation } from "react-router-dom";
-// import { 
-//   getAllUsers,
-//   getProfilePic,
-//   getFriendsList,
-//   checkFriends,
-//   addFriend,
-//   removeFriend,
-//   getFilteredUsersPFP 
-// } from "../Back End/validation";
-// import User from "../Components/user";
-// import "../Components/Profile.css";
-// import "../Components/NavBar.css";
-
-// function Profile() {
-//   const navigate = useNavigate();
-//   const [searchTerm, setSearchTerm] = useState("");
-//   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-//   const [profilePicUrls, setProfilePicUrls] = useState<string[]>([]);
-//   const [friendsPFPUrls, setFriendsPFPUrls] = useState<string[]>([]);
-//   const [sidebarOpen, setSidebarOpen] = useState(false);
-//   const [profilePicUrl, setProfilePicUrl] = useState(null);
-//   const [dropdownOpen, setDropdownOpen] = useState(false);
-//   const [addButtonDisplay, setAddButtonDisplay] = useState(false);
-//   const [removeButtonDisplay, setRemoveButtonDisplay] = useState(false);
-
-//   const searchContainerRef = useRef(null);
-//   const location = useLocation();
-//   const currentUser = location.state?.user;
-//   const targetUser = location.state?.target;
-//   const targetEmail = targetUser.email;
-//   let friends: User[];
-//   let pfpName = "Null";
-  
-//   if(targetUser.profilePic !== pfpName) {
-//     pfpName = targetUser.profilePic;
-//   }
-  
-//   useEffect(() => {
-//     async function loadProfilePic() {
-//       const url = await getProfilePic(targetEmail, pfpName);
-//       if (url) {
-//         setProfilePicUrl(url);
-//       }
-//     }
-
-//     loadProfilePic();
-//   }, [targetEmail, pfpName]);
-
-//   useEffect(() => {
-//     async function loadFriends() {
-//       friends = await getFriendsList(currentUser.email);
-
-//       if(friends.length > 0) {
-//         loadFriendsPFP();
-//       }
-//     }
-
-//     loadFriends();
-//   }, []);
-
-//   async function loadFriendsPFP() {
-//     const friendsPFPs = await getFilteredUsersPFP(friends);
-//     // console.log(friendsPFPs);
-  
-//     setFriendsPFPUrls(friendsPFPs);
-//   }
-
-//   useEffect(() => {
-//     // Add a click event listener to the document
-//     const handleClickOutside = (event: { target: any; }) => {
-//       if (searchContainerRef.current && !(searchContainerRef.current as HTMLElement).contains(event.target)) {
-//         // Clicked outside of the search container, close the dropdown
-//         setDropdownOpen(false);
-//       }
-//     };
-
-//     // Attach the event listener
-//     document.addEventListener("click", handleClickOutside);
-
-//     return () => {
-//       // Remove the event listener when the component unmounts
-//       document.removeEventListener("click", handleClickOutside);
-//     };
-//   }, []);
-
-//   const toggleSidebar = () => {
-//     setSidebarOpen(!sidebarOpen);
-//   };
-
-//   const handleLogout = () => {
-//     if (currentUser) {
-//       currentUser.loginStatus = false;
-//     }
-//   }
-
-//   const handleEventsLink = () =>{ 
-//     navigate("/create-events", { state: { user: currentUser } });
-//   }
-
-//   const handleAddButton = async () => {
-//     const check = await checkFriends(currentUser.email, targetEmail);
-//     if (currentUser.email !== targetUser.email && !check) {
-//       await addFriend(currentUser, targetUser);
-//     }
-//   }
-
-//   useEffect(() => {
-//     async function updateAddButtonDisplay() {
-//       const check = await checkFriends(currentUser.email, targetEmail);
-//       setAddButtonDisplay(currentUser.email !== targetUser.email && !check);
-//     }
-
-//     updateAddButtonDisplay();
-//   }, [currentUser.email, targetEmail]);
-
-//   const handleRemoveButton = async () => {
-//     const check = await checkFriends(currentUser.email, targetEmail);
-//     if (currentUser.email !== targetUser.email && check) {
-//       await removeFriend(currentUser, targetUser);
-//     }
-//   }
-
-//   useEffect(() => {
-//     async function updateRemoveButtonDisplay() {
-//       const check = await checkFriends(currentUser.email, targetEmail);
-//       setRemoveButtonDisplay(currentUser.email !== targetUser.email && check);
-//     }
-
-//     updateRemoveButtonDisplay();
-//   }, [currentUser.email, targetEmail]);
-
-//   const handleSearch = async (event: ChangeEvent<HTMLInputElement>) => {
-//     const searchTerm = event.target.value;
-//     const holder = await getAllUsers();
-//     setSearchTerm(searchTerm);
-  
-//     // Check if searchTerm is empty or contains only white-space characters
-//     if (!searchTerm.trim()) {
-//       setFilteredUsers([]);
-//       return;
-//     }
-
-//     // Filter users based on search term
-//     const filtered = holder.filter(
-//       (user: { first_name: string; surname: string; username: string; }) =>
-//         user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//         user.surname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//         user.username.toLowerCase().includes(searchTerm.toLowerCase())
-//     );
-
-//     let pfpURLS: SetStateAction<string[]> = [];
-
-//     if(filtered.length > 0) {
-//       pfpURLS = await getFilteredUsersPFP(filtered);
-//     }
-  
-//     setProfilePicUrls(pfpURLS);
-//     setFilteredUsers(filtered);
-//     setDropdownOpen(true);
-//   };
-
-//   return (
-//     <div className={`profile-container ${sidebarOpen ? "sidebar-open" : ""}`}>
-//       {/* Sidebar Toggle Button */}
-//       <div className="sidebar-toggle" onClick={toggleSidebar}>
-//         <div className={`toggle-lines ${sidebarOpen ? "open" : ""}`}>
-//           &#9776;
-//         </div>
-//       </div>
-
-//       {/* Sidebar */}
-//       <div className="sidebar">
-//         <h2></h2>
-//         <ul>
-//           <li>
-//             <Link to="/create-events" onClick={handleEventsLink}>Create Event</Link>
-//           </li>
-//           <li>
-//             <a href="#">Settings</a>
-//           </li>
-//           <li>
-//             <Link to="/Privacy">Privacy Settings</Link>
-//           </li>
-//           <li>
-//             <Link to="/Support">Support Page</Link>
-//           </li>
-//           <li>
-//           <Link to="/Login" onClick={handleLogout}>Log out</Link>{" "}
-//           </li>
-//         </ul>
-//       </div>
-
-//       {/* Main Content */}
-//       <div className="main-content">
-//         {profilePicUrl && (
-//           <div className="profile-info">
-//             <img src={profilePicUrl} alt="Profile" className="profile-pic" />
-//               <div className="targetUser-details">
-//                 <p className="targetUser-name">{targetUser.first_name}</p>
-//                 <p className="targetUser-username">@{targetUser.username}</p>
-
-//                 <button
-//                   className="add-button"
-//                   onClick={handleAddButton}
-//                   style={{display: addButtonDisplay ? 'block' : 'none'}}
-//                 >
-//                   Add Friend
-//                 </button>
-//                 <button
-//                   className="remove-button"
-//                   onClick={handleRemoveButton}
-//                   style={{display: removeButtonDisplay ? 'block' : 'none'}}
-//                 >
-//                   Remove Friend
-//                 </button>
-//               </div>
-//           </div>
-//         )}
-//         <h1>Profile</h1>
-
-//         {/* <div className="friends-container">
-//           <h2>Friends</h2>
-//           <div className="friends-section">
-//             <div className="friends-list">
-//               {friends.map((friend, index) => (
-//                 <div key={index} className="friend-entry">
-//                   <img src={friendsPFPUrls[index]} alt="Profile" className="friend-pic" />
-//                   <p className="friend-username">@{friend.username}</p>
-//                 </div>
-//               ))}
-//             </div>
-//           </div>
-//         </div> */}
-
-//         {/* Search Bar and Search Results Container */}
-//         <div ref={searchContainerRef} className="search-container">
-//           {/* Search Bar */}
-//           <input
-//             type="text"
-//             placeholder="Search for users..."
-//             value={searchTerm}
-//             onChange={handleSearch}
-//           />
-//           {/* Search Results Dropdown */}
-//           {dropdownOpen && (
-//             <div className="search-results">
-//               <ul>
-//                 {filteredUsers.map((targetUser, index) => (
-//                   <li
-//                     key={index}
-//                     onClick={() => {
-//                       setSearchTerm("");
-//                       setDropdownOpen(false);
-//                       navigate("/profile", { 
-//                         state: { user: currentUser, target: targetUser }
-//                       });
-//                     }}
-//                   >
-//                     <div className="search-result-entry">
-//                       <img src={profilePicUrls[index]} alt="Profile" className="search-result-pic" />
-//                       <div className="search-result-details">
-//                         <p>{targetUser.username}</p>
-//                       </div>
-//                     </div>
-//                   </li>
-//                 ))}
-//               </ul>
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default Profile;

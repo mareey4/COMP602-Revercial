@@ -98,23 +98,23 @@ export async function savePostAttachment(username, postID, file) {
     const refPost = storageRef(storage, 'Posts/' + username + '/' + postID + '/' + file.name);
 
     await uploadBytes(refPost, file);
+    return getDownloadURL(refPost);
 }
 
-export async function savePostMetadata(username, postId, caption, filename) {
+export async function savePostMetadata(username, postId, caption, mediaUrl) {
     const db = getDatabase(fbConfig);
     const postRef = databaseRef(db, 'Posts/' + username + '/' + postId);
 
     const postData = {
         caption: caption,
-        fileName: filename,
+        mediaUrl: mediaUrl,
         datePosted: new Date().toISOString() // Saving the post date in ISO format
     };
 
     await set(postRef, postData);
 }
 
-
- export async function checkExistingTicketID(ticketID) {
+export async function checkExistingTicketID(ticketID) {
     const db = getDatabase(fbConfig);
     const topicOptions = [
         'Account Issues',
@@ -835,12 +835,12 @@ export function isValidDate(dateString) {
     return selectedDate >= currentDate;
 }
 
-export async function deletePostMediaFromStorage(post) {
-    // console.log("Username:", username); // Logging for debugging
-    // console.log("Post ID:", postId); // Logging for debugging
-    console.log(post.file);
+export async function deletePostMediaFromStorage(username, postId, fileName) {
+    console.log("Username:", username); // Logging for debugging
+    console.log("Post ID:", postId); // Logging for debugging
+console.log(fileName);
     const storage = getStorage(fbConfig);
-    const postMediaRef = storageRef(storage, post.file);
+    const postMediaRef = storageRef(storage, `Posts/${username}/${postId}/${fileName}`);
     await deleteObject(postMediaRef);  // This deletes the entire directory for the post, removing all media associated with it.
 }
 
@@ -858,27 +858,25 @@ export async function getPostsForUser(username) {
     const postRef = databaseRef(db, 'Posts/' + username);
     let postsArray = [];
 
-    return new Promise((resolve) => {
-        onValue(postRef, async (snapshot) => {
-            const posts = snapshot.val();
+    try {
+        const snapshot = await get(postRef);
+        const postsData = snapshot.val();
 
-            for(const postID in posts){
-                const postData = posts[postID];
-                const file = await getPostImage(username, postID, postData.fileName);
-
-                const post = new Post(
-                    postData.caption,
-                    postID,
-                    file
-                );
-
-                postsArray.push(post);
+        if (postsData) {
+            for (const postId in postsData) {
+                postsArray.push({
+                    mediaUrl: postsData[postId].mediaUrl,
+                    caption: postsData[postId].caption,
+                    postId: postId,
+                    fileName: postId.fileName
+                });
             }
-        });
+        }
+    } catch (error) {
+        console.error("Error fetching posts:", error);
+    }
 
-        resolve(postsArray);
-        return;
-    });
+    return postsArray;
 }
 
 export async function getPostImage(username, ticketID, filename) {

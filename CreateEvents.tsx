@@ -1,48 +1,23 @@
 import React, { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import "../Components/NavBar.css";
-import "../Components/CreateEvents.css";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import "../Front End/NavBar.css";
+import "../Front End/CreateEvents.css";
 import { getDatabase, ref, set } from "firebase/database";
-import { fbConfig } from "../Back End/firebase";
-import { generateTicketID } from "../Back End/TicketGenerator";
+import { fbConfig } from "./firebase";
+import { generateTicketID } from "./TicketGenerator";
 import {
   getCurrentDate,
   validateAddress,
   validateDescription,
   isFutureDate,
-} from "../Back End/validation";
+} from "./validation";
+import Events from "./Events";
 
 function CreateEvents() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const currentUser = location.state?.user;
-  console.log(currentUser);
 
   // State for sidebar toggle
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Function to toggle the sidebar
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  // State for selected event type and step in event creation
-  const [selectedEventType, setSelectedEventType] = useState("");
-  const [step, setStep] = useState(1);
-
-  // State for event details, button states, and address validation
-  const [eventDetails, setEventDetails] = useState({
-    date: "",
-    location: "",
-    description: "",
-  });
-
-  const [continueButtonDisabled, setContinueButtonDisabled] = useState(true); // State for disabling the "Continue" button
-  const [addressValid, setAddressValid] = useState(true);
-
-  const handleProfileLink = () =>{
-    navigate("/profile", { state: { user: currentUser } });
-  }
 
   const eventChoices = [
     "Gala",
@@ -60,6 +35,33 @@ function CreateEvents() {
     "Other",
   ];
 
+  // Function to toggle the sidebar
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  // State for selected event type and step in event creation
+  const [selectedEventType, setSelectedEventType] = useState("");
+  const [step, setStep] = useState(1);
+
+  // State for event details, button states, and address validation
+  const [eventDetails, setEventDetails] = useState({
+    date: "",
+    location: "",
+    description: "",
+  });
+  const [continueButtonDisabled, setContinueButtonDisabled] = useState(true); // State for disabling the "Continue" button
+  const [addressValid, setAddressValid] = useState(true);
+
+  // State for the created event
+  const [createdEvent, setCreatedEvent] = useState<Events | null>(null);
+  const location = useLocation();
+  const user = location.state?.user;
+
+  const handleProfileLink = async () => {
+    navigate("/profile", { state: { user: user } });
+  };
+
   // Event type change handler
   const handleEventTypeChange = (
     event: React.ChangeEvent<HTMLSelectElement>
@@ -70,8 +72,6 @@ function CreateEvents() {
   // Event creation handler
   const handleCreateEvent = async () => {
     // Check for incomplete event details
-    console.log("Handle Create Event function called!");
-
     if (
       !eventDetails.date ||
       !eventDetails.location ||
@@ -99,19 +99,27 @@ function CreateEvents() {
       // Generate a unique ticket ID
       const ticketID = await generateTicketID("Events", undefined);
 
-      const eventDetailsWithTicketID = {
-        ...eventDetails,
-        ticketID: ticketID,
-      };
-
+      const newEvent = new Events(
+        eventDetails.date,
+        eventDetails.description,
+        eventDetails.location,
+        ticketID,
+        selectedEventType
+      );
+      newEvent.eventType = selectedEventType;
       // Access Firebase database
       const db = getDatabase(fbConfig);
       const eventTypePath = selectedEventType.replace(/ /g, "_");
       const eventPath = `Events/${eventTypePath}/${ticketID}`;
       const eventRef = ref(db, eventPath);
 
+      console.log("Event Path:", eventPath);
+      console.log("Event Data:", newEvent);
       // Set event details in the database
-      set(eventRef, eventDetailsWithTicketID);
+      set(eventRef, newEvent);
+
+      // Store the created event in state
+      setCreatedEvent(newEvent);
 
       alert("Event created successfully!");
     } catch (error) {
@@ -162,7 +170,7 @@ function CreateEvents() {
         <h2></h2>
         <ul>
           <li>
-            <Link to="/profile" onClick={handleProfileLink}>
+            <Link to="/Profile" onClick={handleProfileLink}>
               Profile
             </Link>
           </li>
@@ -271,7 +279,7 @@ function CreateEvents() {
               onChange={handleInputChange}
               maxLength={501}
               rows={5}
-              style={{ width: "92%", height: "200px" }}
+              style={{ width: "92%", height: "100px" }}
             />
             <div className="create-button-container">
               <button
