@@ -43,8 +43,8 @@ Revercial is a groundbreaking platform built to foster real-world connections an
 
 * [![React][React.js]][React-url]
 * [![Firebase][Firebase.js]][Firebase-url]
-* [![HTML][HTML.js][HTML-url]]
-* [![CSS][CSS.js][CSS-url]]
+* [![HTML][HTML.js]][HTML-url]
+* [![CSS][CSS.js]][CSS-url]
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
