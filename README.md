@@ -96,16 +96,23 @@ This is an example of how to list things you need to use the software and how to
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Demonstration
-
-1. [Creating an Account](#creating-an-account)
-2. [Logging In](#logging-in)
-3. [Accessing Profile Page](#accessing-profile-page)
-4. [Using the Navbar](#using-the-navbar)
-
 [![Create an Account](https://i.imgur.com/jqz2nI7.png)](https://imgur.com/jqz2nI7)
 ```sh
  This image shows the user registration page. To create an account, fill in the required fields, including your email, username, and password, and then click the "Sign Up" button.
 ```
+[![Log In](https://imgur.com/JENQlDy.png)](https://imgur.com/JENQlDy)
+```sh
+Description: This image displays the login page. To log in, enter your email and password, and click the "Log In" button.
+```
+[![Accessing Profile Page](https://imgur.com/tSpcEk2.png)](https://imgur.com/tSpcEk2)
+```sh
+Description: Here's the user's profile page after logging in. You can view and edit your profile details.
+```
+[![Using the Navbar](https://imgur.com/vmF0rUz.png)](https://imgur.com/vmF0rUz)
+```sh
+Description: The navigation bar allows users to access various features. You can navigate to your profile, explore posts, search for users, and access other functionalities from the navbar.
+```
+
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
