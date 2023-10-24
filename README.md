@@ -95,6 +95,15 @@ This is an example of how to list things you need to use the software and how to
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+### Demonstration
+
+1. [Creating an Account](#creating-an-account)
+2. [Logging In](#logging-in)
+3. [Accessing Profile Page](#accessing-profile-page)
+4. [Using the Navbar](#using-the-navbar)
+
+[![Create Account]([https://example.com/images/create-account.png](https://imgur.com/jqz2nI7))]([https://example.com/images/create-account.png](https://imgur.com/jqz2nI7))
+*Description: This image shows the user registration page. To create an account, fill in the required fields, including your email, username, and password, and then click the "Sign Up" button.*
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
